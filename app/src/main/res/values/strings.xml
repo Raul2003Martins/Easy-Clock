@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Easy Clock</string>
+
+    <!-- Autenticação -->
+    <string name="cadastro">Cadastro</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="senha">Senha</string>
+    <string name="confirmar_senha">Confirmar Senha</string>
+    <string name="entrar">Entrar</string>
+    <string name="cadastrar">Cadastrar</string>
+    <string name="esqueci_minha_senha">Esqueci minha senha</string>
+    <string name="nao_tem_conta_cadastrar">Não tem conta ainda? Clique aqui para cadastrar</string>
+    <string name="regras_senha_titulo">Siga as regras da senha abaixo:</string>
+    <string name="regras_senha_descricao">• Mínimo 8 caracteres\n• Pelo menos 1 letra maiúscula\n• Pelo menos 1 letra minúscula\n• Pelo menos 1 caracter especial\n• Pelo menos 1 número</string>
+
+    <!-- Home / Ponto -->
+    <string name="botao_perfil">Perfil</string>
+    <string name="realizar_batimento_ponto">Bater Ponto</string>
+    <string name="reconhecimento_facial">Reconhecimento Facial (FaceID)</string>
+    <string name="faceid_instrucao">Posicione seu rosto na câmera para liberar o batimento de ponto.</string>
+    <string name="bater_ponto_trancado">Aguardando FaceID...</string>
+
+    <!-- Perfil -->
+    <string name="perfil">Perfil</string>
+    <string name="nome">Nome</string>
+    <string name="espelho_de_ponto">Espelho de Ponto</string>
+    <string name="visualizar_holerites">Visualizar Holerites</string>
+    <string name="logout">Logout / Sair</string>
+    <string name="ver_todos_colaboradores">Ver Todos os Colaboradores e Pontos</string>
+
+    <!-- Espelho de Ponto -->
+    <string name="saldo_de_horas">Saldo de horas:</string>
+    <string name="solicitar_ajuste_ponto">Solicitar Ajuste de Ponto</string>
+    <string name="enviar_justificativa_falta">Enviar Justificativa de Falta</string>
+    <string name="solicitar_folga_ferias">Solicitar Folga / Férias</string>
+    <string name="historico_de_ponto">Histórico de Ponto</string>
+
+    <!-- Justificativas -->
+    <string name="justificativas">Justificativas</string>
+    <string name="enviar_justificativa">Enviar Nova Justificativa</string>
+    <string name="anexo">Anexo (Foto / PDF)</string>
+    <string name="selecionar_dia_falta">Selecionar dia da falta</string>
+    <string name="status_aceito">Aceito</string>
+    <string name="status_negado">Negado</string>
+    <string name="status_pendente">Pendente</string>
+
+    <!-- Holerite -->
+    <string name="holerite">Holerite</string>
+    <string name="gerar_holerite">Gerar Holerite</string>
+    <string name="anexar_holerite">Anexar Holerite e Confirmar</string>
+    <string name="setor">Setor</string>
+    <string name="mes_ano">Mês / Ano</string>
+
+    <!-- Folga e Férias -->
+    <string name="folga_ferias">Folga / Férias</string>
+    <string name="solicitar_venda_ferias">Solicitar Venda de Férias</string>
+    <string name="calendario_solicitacao">Calendário para Selecionar Período</string>
+
+    <!-- Telas RH -->
+    <string name="colaboradores">Colaboradores</string>
+    <string name="pesquisar_colaborador">Pesquisar colaborador...</string>
+    <string name="invalidar_falta">Invalidar Falta</string>
+    <string name="negar_justificativa">Negar Justificativa</string>
+    <string name="ver_solicitacoes">Ver Solicitações</string>
+    <string name="visualizar_justificativas">Visualizar Justificativas</string>
+    <string name="editar_banco_horas">Editar Banco de Horas</string>
+    <string name="solicitacoes">Solicitações</string>
+    <string name="historico_solicitacoes_folga">Histórico de Solicitações de Folga/Férias</string>
+    <string name="historico_solicitacoes_ajuste">Histórico de Solicitações de Ajuste de Ponto</string>
+    <string name="conceder_folga">Conceder Folga/Férias</string>
+    <string name="nao_conceder_folga">Não Conceder Folga/Férias</string>
+    <string name="confirmar_ajuste">Confirmar Ajuste de Ponto</string>
+    <string name="nao_conceder_ajuste">Não Conceder Ajuste</string>
+    <string name="motivo_negocio">Motivo da Recusa (Negócio)</string>
+</resources>
