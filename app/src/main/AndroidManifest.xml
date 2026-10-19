@@ -12,31 +12,32 @@
 
         <!-- Activities -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CadastroActivity" />
-        <activity android:name=".HomeFuncionarioActivity" />
-        <activity android:name=".FaceIdActivity" />
-        <activity android:name=".JustificativasActivity" />
-        <activity android:name=".PerfilFuncionarioActivity" />
-        <activity android:name=".EspelhoPontoActivity" />
-        <activity android:name=".HoleriteActivity" />
-        <activity android:name=".FolgaFeriasActivity" />
+        <activity android:name=".activities.CadastroActivity" />
+        <activity android:name=".activities.CadastroEmpresaActivity" />
+        <activity android:name=".activities.HomeFuncionarioActivity" />
+        <activity android:name=".activities.FaceIdActivity" />
+        <activity android:name=".activities.JustificativasActivity" />
+        <activity android:name=".activities.PerfilFuncionarioActivity" />
+        <activity android:name=".activities.EspelhoPontoActivity" />
+        <activity android:name=".activities.HoleriteActivity" />
+        <activity android:name=".activities.FolgaFeriasActivity" />
 
         <!-- RH Activities -->
-        <activity android:name=".PerfilRhActivity" />
-        <activity android:name=".ColaboradoresActivity" />
-        <activity android:name=".HoleriteRhActivity" />
-        <activity android:name=".JustificativasFuncionarioActivity" />
-        <activity android:name=".EspelhoPontoFuncionarioActivity" />
-        <activity android:name=".SolicitacoesFuncionarioActivity" />
-        <activity android:name=".SolicitacaoFolgaDetalheActivity" />
-        <activity android:name=".SolicitacaoAjusteDetalheActivity" />
+        <activity android:name=".activities.PerfilRhActivity" />
+        <activity android:name=".activities.ColaboradoresActivity" />
+        <activity android:name=".activities.HoleriteRhActivity" />
+        <activity android:name=".activities.JustificativasFuncionarioActivity" />
+        <activity android:name=".activities.EspelhoPontoFuncionarioActivity" />
+        <activity android:name=".activities.SolicitacoesFuncionarioActivity" />
+        <activity android:name=".activities.SolicitacaoFolgaDetalheActivity" />
+        <activity android:name=".activities.SolicitacaoAjusteDetalheActivity" />
     </application>
 
 </manifest>

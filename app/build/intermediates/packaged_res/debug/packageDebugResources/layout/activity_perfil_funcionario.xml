@@ -48,8 +48,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etNomePerfil"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="João Silva" />
+                android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -67,28 +66,28 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEmailPerfil"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="joao.silva@empresa.com" />
+                android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Botões de ação do Perfil -->
+
         <LinearLayout
             android:id="@+id/layoutAcoesPerfil"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="32dp"
-            app:layout_constraintTop_toBottomOf="@id/tilEmailPerfil"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/tilEmailPerfil">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEspelhoPonto"
                 android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:layout_marginEnd="8dp"
+                android:layout_weight="1"
                 android:text="@string/espelho_de_ponto"
                 android:textSize="13sp"
                 app:cornerRadius="8dp"
@@ -98,9 +97,9 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnVisualizarHolerites"
                 android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
+                android:layout_weight="1"
                 android:text="@string/visualizar_holerites"
                 android:textSize="13sp"
                 app:cornerRadius="8dp"
@@ -114,17 +113,18 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="64dp"
             android:text="@string/logout"
             android:textColor="@color/button_danger"
-            app:strokeColor="@color/button_danger"
             app:cornerRadius="8dp"
             app:icon="@drawable/ic_logout"
-            app:iconTint="@color/button_danger"
             app:iconGravity="textStart"
-            app:layout_constraintTop_toBottomOf="@id/layoutAcoesPerfil"
+            app:iconTint="@color/button_danger"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.666"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/layoutAcoesPerfil"
+            app:strokeColor="@color/button_danger" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

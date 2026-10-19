@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#26A69A</color>
+    <color name="background">#F5F7FA</color>
+    <color name="border">#CCCCCC</color>
+    <color name="button_danger">#D32F2F</color>
+    <color name="button_disabled">#B0BEC5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="primary">#1E88E5</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="primary_light">#E3F2FD</color>
+    <color name="status_accepted">#388E3C</color>
+    <color name="status_accepted_bg">#E8F5E9</color>
+    <color name="status_pending">#F57C00</color>
+    <color name="status_pending_bg">#FFF3E0</color>
+    <color name="status_rejected">#D32F2F</color>
+    <color name="status_rejected_bg">#FFEBEE</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text_hint">#BDBDBD</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <string name="anexar_holerite">Anexar Holerite e Confirmar</string>
+    <string name="anexo">Anexo (Foto / PDF)</string>
+    <string name="app_name">Easy Clock</string>
+    <string name="bater_ponto_trancado">Aguardando FaceID...</string>
+    <string name="botao_perfil">Perfil</string>
+    <string name="cadastrar">Cadastrar</string>
+    <string name="cadastre_sua_empresa_aqui">Cadastre sua empresa aqui</string>
+    <string name="cadastro">Cadastro</string>
+    <string name="cadastro_empresa">Cadastro de Empresa</string>
+    <string name="calendario_solicitacao">Calendário para Selecionar Período</string>
+    <string name="cnpj">CNPJ</string>
+    <string name="colaboradores">Colaboradores</string>
+    <string name="conceder_folga">Conceder Folga/Férias</string>
+    <string name="confirmar_ajuste">Confirmar Ajuste de Ponto</string>
+    <string name="confirmar_senha">Confirmar Senha</string>
+    <string name="editar_banco_horas">Editar Banco de Horas</string>
+    <string name="email">Email</string>
+    <string name="entrar">Entrar</string>
+    <string name="enviar_justificativa">Enviar Nova Justificativa</string>
+    <string name="enviar_justificativa_falta">Enviar Justificativa de Falta</string>
+    <string name="espelho_de_ponto">Espelho de Ponto</string>
+    <string name="esqueci_minha_senha">Esqueci minha senha</string>
+    <string name="faceid_instrucao">Posicione seu rosto na câmera para liberar o batimento de ponto.</string>
+    <string name="folga_ferias">Folga / Férias</string>
+    <string name="gerar_holerite">Gerar Holerite</string>
+    <string name="historico_de_ponto">Histórico de Ponto</string>
+    <string name="historico_solicitacoes_ajuste">Histórico de Solicitações de Ajuste de Ponto</string>
+    <string name="historico_solicitacoes_folga">Histórico de Solicitações de Folga/Férias</string>
+    <string name="holerite">Holerite</string>
+    <string name="invalidar_falta">Invalidar Falta</string>
+    <string name="justificativas">Justificativas</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout / Sair</string>
+    <string name="mes_ano">Mês / Ano</string>
+    <string name="motivo_negocio">Motivo da Recusa (Negócio)</string>
+    <string name="nao_conceder_ajuste">Não Conceder Ajuste</string>
+    <string name="nao_conceder_folga">Não Conceder Folga/Férias</string>
+    <string name="nao_tem_conta_cadastrar">Não tem conta ainda? Clique aqui para cadastrar</string>
+    <string name="negar_justificativa">Negar Justificativa</string>
+    <string name="nome">Nome</string>
+    <string name="nome_empresa">Nome da Empresa</string>
+    <string name="perfil">Perfil</string>
+    <string name="pesquisar_colaborador">Pesquisar colaborador...</string>
+    <string name="realizar_batimento_ponto">Bater Ponto</string>
+    <string name="reconhecimento_facial">Reconhecimento Facial (FaceID)</string>
+    <string name="regras_senha_descricao">• Mínimo 8 caracteres\n• Pelo menos 1 letra maiúscula\n• Pelo menos 1 letra minúscula\n• Pelo menos 1 caracter especial\n• Pelo menos 1 número</string>
+    <string name="regras_senha_titulo">Siga as regras da senha abaixo:</string>
+    <string name="saldo_de_horas">Saldo de horas:</string>
+    <string name="selecionar_dia_falta">Selecionar dia da falta</string>
+    <string name="senha">Senha</string>
+    <string name="setor">Setor</string>
+    <string name="solicitacoes">Solicitações</string>
+    <string name="solicitar_ajuste_ponto">Solicitar Ajuste de Ponto</string>
+    <string name="solicitar_folga_ferias">Solicitar Folga / Férias</string>
+    <string name="solicitar_venda_ferias">Solicitar Venda de Férias</string>
+    <string name="status_aceito">Aceito</string>
+    <string name="status_negado">Negado</string>
+    <string name="status_pendente">Pendente</string>
+    <string name="ver_solicitacoes">Ver Solicitações</string>
+    <string name="ver_todos_colaboradores">Ver Todos os Colaboradores e Pontos</string>
+    <string name="visualizar_holerites">Visualizar Holerites</string>
+    <string name="visualizar_justificativas">Visualizar Justificativas</string>
+    <style name="Theme.EasyClock" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/accent</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+</resources>

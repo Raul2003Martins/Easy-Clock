@@ -27,7 +27,7 @@
 
         <!-- Activities -->
         <activity
-            android:name="com.easyclock.app.LoginActivity"
+            android:name="com.easyclock.app.activities.LoginActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,24 +35,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.easyclock.app.CadastroActivity" />
-        <activity android:name="com.easyclock.app.HomeFuncionarioActivity" />
-        <activity android:name="com.easyclock.app.FaceIdActivity" />
-        <activity android:name="com.easyclock.app.JustificativasActivity" />
-        <activity android:name="com.easyclock.app.PerfilFuncionarioActivity" />
-        <activity android:name="com.easyclock.app.EspelhoPontoActivity" />
-        <activity android:name="com.easyclock.app.HoleriteActivity" />
-        <activity android:name="com.easyclock.app.FolgaFeriasActivity" />
+        <activity android:name="com.easyclock.app.activities.CadastroActivity" />
+        <activity android:name="com.easyclock.app.activities.CadastroEmpresaActivity" />
+        <activity android:name="com.easyclock.app.activities.HomeFuncionarioActivity" />
+        <activity android:name="com.easyclock.app.activities.FaceIdActivity" />
+        <activity android:name="com.easyclock.app.activities.JustificativasActivity" />
+        <activity android:name="com.easyclock.app.activities.PerfilFuncionarioActivity" />
+        <activity android:name="com.easyclock.app.activities.EspelhoPontoActivity" />
+        <activity android:name="com.easyclock.app.activities.HoleriteActivity" />
+        <activity android:name="com.easyclock.app.activities.FolgaFeriasActivity" />
 
         <!-- RH Activities -->
-        <activity android:name="com.easyclock.app.PerfilRhActivity" />
-        <activity android:name="com.easyclock.app.ColaboradoresActivity" />
-        <activity android:name="com.easyclock.app.HoleriteRhActivity" />
-        <activity android:name="com.easyclock.app.JustificativasFuncionarioActivity" />
-        <activity android:name="com.easyclock.app.EspelhoPontoFuncionarioActivity" />
-        <activity android:name="com.easyclock.app.SolicitacoesFuncionarioActivity" />
-        <activity android:name="com.easyclock.app.SolicitacaoFolgaDetalheActivity" />
-        <activity android:name="com.easyclock.app.SolicitacaoAjusteDetalheActivity" />
+        <activity android:name="com.easyclock.app.activities.PerfilRhActivity" />
+        <activity android:name="com.easyclock.app.activities.ColaboradoresActivity" />
+        <activity android:name="com.easyclock.app.activities.HoleriteRhActivity" />
+        <activity android:name="com.easyclock.app.activities.JustificativasFuncionarioActivity" />
+        <activity android:name="com.easyclock.app.activities.EspelhoPontoFuncionarioActivity" />
+        <activity android:name="com.easyclock.app.activities.SolicitacoesFuncionarioActivity" />
+        <activity android:name="com.easyclock.app.activities.SolicitacaoFolgaDetalheActivity" />
+        <activity android:name="com.easyclock.app.activities.SolicitacaoAjusteDetalheActivity" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

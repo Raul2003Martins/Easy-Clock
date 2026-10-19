@@ -26,8 +26,11 @@
     <string name="bater_ponto_trancado">Aguardando FaceID...</string>
     <string name="botao_perfil">Perfil</string>
     <string name="cadastrar">Cadastrar</string>
+    <string name="cadastre_sua_empresa_aqui">Cadastre sua empresa aqui</string>
     <string name="cadastro">Cadastro</string>
+    <string name="cadastro_empresa">Cadastro de Empresa</string>
     <string name="calendario_solicitacao">Calendário para Selecionar Período</string>
+    <string name="cnpj">CNPJ</string>
     <string name="colaboradores">Colaboradores</string>
     <string name="conceder_folga">Conceder Folga/Férias</string>
     <string name="confirmar_ajuste">Confirmar Ajuste de Ponto</string>
@@ -57,6 +60,7 @@
     <string name="nao_tem_conta_cadastrar">Não tem conta ainda? Clique aqui para cadastrar</string>
     <string name="negar_justificativa">Negar Justificativa</string>
     <string name="nome">Nome</string>
+    <string name="nome_empresa">Nome da Empresa</string>
     <string name="perfil">Perfil</string>
     <string name="pesquisar_colaborador">Pesquisar colaborador...</string>
     <string name="realizar_batimento_ponto">Bater Ponto</string>

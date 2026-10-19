@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-42:12
-INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-42:12
-INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-42:12
-INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-42:12
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-43:12
+INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-43:12
+INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-43:12
+INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:1-43:12
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\bb1fb45911a32e038c63061af590615a\workspace\transformed\material-1.11.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Raul\.gradle\caches\9.3.0\transforms\6968107beb8b8909da88d1fb7d0f47b1\workspace\transformed\constraintlayout-2.1.4\AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\82d126f5b0a02869d838bfc370025a06\workspace\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
@@ -55,8 +55,8 @@ MERGED from [androidx.print:print:1.0.0] C:\Users\Raul\.gradle\caches\9.3.0\tran
 	xmlns:android
 		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:2:11-69
 application
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:5:5-40:19
-INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:5:5-40:19
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:5:5-41:19
+INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:5:5-41:19
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\bb1fb45911a32e038c63061af590615a\workspace\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\bb1fb45911a32e038c63061af590615a\workspace\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Raul\.gradle\caches\9.3.0\transforms\6968107beb8b8909da88d1fb7d0f47b1\workspace\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
@@ -89,12 +89,12 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Raul\.gradle\cache
 		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:6:9-35
 	android:theme
 		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:11:9-47
-activity#com.easyclock.app.LoginActivity
+activity#com.easyclock.app.activities.LoginActivity
 ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:14:9-21:20
 	android:exported
 		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:16:13-36
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:15:13-42
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:15:13-53
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
 ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:17:13-20:29
 action#android.intent.action.MAIN
@@ -105,70 +105,74 @@ category#android.intent.category.LAUNCHER
 ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:19:17-77
 	android:name
 		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:19:27-74
-activity#com.easyclock.app.CadastroActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:9-54
+activity#com.easyclock.app.activities.CadastroActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:9-65
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:19-51
-activity#com.easyclock.app.HomeFuncionarioActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:9-61
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:19-62
+activity#com.easyclock.app.activities.CadastroEmpresaActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:9-72
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:19-58
-activity#com.easyclock.app.FaceIdActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:9-52
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:19-69
+activity#com.easyclock.app.activities.HomeFuncionarioActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:9-72
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:19-49
-activity#com.easyclock.app.JustificativasActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:9-60
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:19-69
+activity#com.easyclock.app.activities.FaceIdActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:9-63
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:19-57
-activity#com.easyclock.app.PerfilFuncionarioActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:9-63
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:19-60
+activity#com.easyclock.app.activities.JustificativasActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:9-71
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:19-60
-activity#com.easyclock.app.EspelhoPontoActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:9-58
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:19-68
+activity#com.easyclock.app.activities.PerfilFuncionarioActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:9-74
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:19-55
-activity#com.easyclock.app.HoleriteActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:9-54
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:19-71
+activity#com.easyclock.app.activities.EspelhoPontoActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:9-69
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:19-51
-activity#com.easyclock.app.FolgaFeriasActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:9-57
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:19-66
+activity#com.easyclock.app.activities.HoleriteActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:9-65
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:19-54
-activity#com.easyclock.app.PerfilRhActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:32:9-54
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:19-62
+activity#com.easyclock.app.activities.FolgaFeriasActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:30:9-68
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:32:19-51
-activity#com.easyclock.app.ColaboradoresActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:9-59
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:30:19-65
+activity#com.easyclock.app.activities.PerfilRhActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:9-65
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:19-56
-activity#com.easyclock.app.HoleriteRhActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:9-56
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:19-62
+activity#com.easyclock.app.activities.ColaboradoresActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:9-70
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:19-53
-activity#com.easyclock.app.JustificativasFuncionarioActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:9-71
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:19-67
+activity#com.easyclock.app.activities.HoleriteRhActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:9-67
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:19-68
-activity#com.easyclock.app.EspelhoPontoFuncionarioActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:9-69
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:19-64
+activity#com.easyclock.app.activities.JustificativasFuncionarioActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:9-82
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:19-66
-activity#com.easyclock.app.SolicitacoesFuncionarioActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:9-69
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:19-79
+activity#com.easyclock.app.activities.EspelhoPontoFuncionarioActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:9-80
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:19-66
-activity#com.easyclock.app.SolicitacaoFolgaDetalheActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:9-69
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:19-77
+activity#com.easyclock.app.activities.SolicitacoesFuncionarioActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:9-80
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:19-66
-activity#com.easyclock.app.SolicitacaoAjusteDetalheActivity
-ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:9-70
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:19-77
+activity#com.easyclock.app.activities.SolicitacaoFolgaDetalheActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:9-80
 	android:name
-		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:19-67
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:19-77
+activity#com.easyclock.app.activities.SolicitacaoAjusteDetalheActivity
+ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:40:9-81
+	android:name
+		ADDED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:40:19-78
 uses-sdk
 INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml

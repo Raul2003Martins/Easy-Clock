@@ -4,6 +4,9 @@
 
     <!-- Autenticação -->
     <string name="cadastro">Cadastro</string>
+    <string name="cadastro_empresa">Cadastro de Empresa</string>
+    <string name="nome_empresa">Nome da Empresa</string>
+    <string name="cnpj">CNPJ</string>
     <string name="login">Login</string>
     <string name="email">Email</string>
     <string name="senha">Senha</string>
@@ -12,6 +15,7 @@
     <string name="cadastrar">Cadastrar</string>
     <string name="esqueci_minha_senha">Esqueci minha senha</string>
     <string name="nao_tem_conta_cadastrar">Não tem conta ainda? Clique aqui para cadastrar</string>
+    <string name="cadastre_sua_empresa_aqui">Cadastre sua empresa aqui</string>
     <string name="regras_senha_titulo">Siga as regras da senha abaixo:</string>
     <string name="regras_senha_descricao">• Mínimo 8 caracteres\n• Pelo menos 1 letra maiúscula\n• Pelo menos 1 letra minúscula\n• Pelo menos 1 caracter especial\n• Pelo menos 1 número</string>
 
