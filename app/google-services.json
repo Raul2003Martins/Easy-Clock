@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "426869746573",
+    "project_id": "easyclock-f2e8f",
+    "storage_bucket": "easyclock-f2e8f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:426869746573:android:7e7604c458db9277ccabc4",
+        "android_client_info": {
+          "package_name": "com.easyclock.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArC_rICU_egLf9ckmcEXDQKbgdy0zebsI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
