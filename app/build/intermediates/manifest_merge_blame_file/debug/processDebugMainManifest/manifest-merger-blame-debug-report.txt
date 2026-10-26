@@ -35,147 +35,146 @@
 24-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:9:9-54
 25        android:supportsRtl="true"
 25-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:10:9-35
-26        android:testOnly="true"
-27        android:theme="@style/Theme.EasyClock" >
-27-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:11:9-47
-28
-29        <!-- Activities -->
-30        <activity
-30-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:14:9-21:20
-31            android:name="com.easyclock.app.activities.LoginActivity"
-31-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:15:13-53
-32            android:exported="true" >
-32-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:16:13-36
-33            <intent-filter>
-33-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:17:13-20:29
-34                <action android:name="android.intent.action.MAIN" />
-34-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:18:17-69
-34-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:18:25-66
-35
-36                <category android:name="android.intent.category.LAUNCHER" />
-36-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:19:17-77
-36-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:19:27-74
-37            </intent-filter>
-38        </activity>
-39        <activity android:name="com.easyclock.app.activities.CadastroActivity" />
-39-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:9-65
-39-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:19-62
-40        <activity android:name="com.easyclock.app.activities.CadastroEmpresaActivity" />
-40-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:9-72
-40-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:19-69
-41        <activity android:name="com.easyclock.app.activities.HomeFuncionarioActivity" />
-41-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:9-72
-41-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:19-69
-42        <activity android:name="com.easyclock.app.activities.FaceIdActivity" />
-42-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:9-63
-42-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:19-60
-43        <activity android:name="com.easyclock.app.activities.JustificativasActivity" />
-43-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:9-71
-43-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:19-68
-44        <activity android:name="com.easyclock.app.activities.PerfilFuncionarioActivity" />
-44-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:9-74
-44-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:19-71
-45        <activity android:name="com.easyclock.app.activities.EspelhoPontoActivity" />
-45-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:9-69
-45-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:19-66
-46        <activity android:name="com.easyclock.app.activities.HoleriteActivity" />
-46-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:9-65
-46-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:19-62
-47        <activity android:name="com.easyclock.app.activities.FolgaFeriasActivity" />
-47-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:30:9-68
-47-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:30:19-65
-48
-49        <!-- RH Activities -->
-50        <activity android:name="com.easyclock.app.activities.PerfilRhActivity" />
-50-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:9-65
-50-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:19-62
-51        <activity android:name="com.easyclock.app.activities.ColaboradoresActivity" />
-51-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:9-70
-51-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:19-67
-52        <activity android:name="com.easyclock.app.activities.HoleriteRhActivity" />
-52-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:9-67
-52-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:19-64
-53        <activity android:name="com.easyclock.app.activities.JustificativasFuncionarioActivity" />
-53-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:9-82
-53-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:19-79
-54        <activity android:name="com.easyclock.app.activities.EspelhoPontoFuncionarioActivity" />
-54-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:9-80
-54-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:19-77
-55        <activity android:name="com.easyclock.app.activities.SolicitacoesFuncionarioActivity" />
-55-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:9-80
-55-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:19-77
-56        <activity android:name="com.easyclock.app.activities.SolicitacaoFolgaDetalheActivity" />
-56-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:9-80
-56-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:19-77
-57        <activity android:name="com.easyclock.app.activities.SolicitacaoAjusteDetalheActivity" />
-57-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:40:9-81
-57-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:40:19-78
-58
-59        <provider
-59-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
-60            android:name="androidx.startup.InitializationProvider"
-60-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
-61            android:authorities="com.easyclock.app.androidx-startup"
-61-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
-62            android:exported="false" >
-62-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
-63            <meta-data
-63-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
-64                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-64-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
-65                android:value="androidx.startup" />
-65-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
-66            <meta-data
-66-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\a03d0caa35563687f8c02a3472fbfde7\workspace\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
-67                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-67-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\a03d0caa35563687f8c02a3472fbfde7\workspace\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
-68                android:value="androidx.startup" />
-68-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\a03d0caa35563687f8c02a3472fbfde7\workspace\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
-69            <meta-data
-69-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
-70                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-70-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
-71                android:value="androidx.startup" />
-71-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
-72        </provider>
-73
-74        <receiver
-74-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
-75            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-75-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
-76            android:directBootAware="false"
-76-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
-77            android:enabled="true"
-77-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
-78            android:exported="true"
-78-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
-79            android:permission="android.permission.DUMP" >
-79-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
-80            <intent-filter>
-80-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
-81                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
-81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
-82            </intent-filter>
-83            <intent-filter>
-83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
-84                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
-84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
-85            </intent-filter>
-86            <intent-filter>
-86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
-87                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
-88            </intent-filter>
-89            <intent-filter>
-89-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
-90                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-90-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
-90-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
-91            </intent-filter>
-92        </receiver>
-93    </application>
-94
-95</manifest>
+26        android:theme="@style/Theme.EasyClock" >
+26-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:11:9-47
+27
+28        <!-- Activities -->
+29        <activity
+29-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:14:9-21:20
+30            android:name="com.easyclock.app.activities.LoginActivity"
+30-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:15:13-53
+31            android:exported="true" >
+31-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:16:13-36
+32            <intent-filter>
+32-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:17:13-20:29
+33                <action android:name="android.intent.action.MAIN" />
+33-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:18:17-69
+33-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:18:25-66
+34
+35                <category android:name="android.intent.category.LAUNCHER" />
+35-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:19:17-77
+35-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:19:27-74
+36            </intent-filter>
+37        </activity>
+38        <activity android:name="com.easyclock.app.activities.CadastroActivity" />
+38-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:9-65
+38-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:22:19-62
+39        <activity android:name="com.easyclock.app.activities.CadastroEmpresaActivity" />
+39-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:9-72
+39-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:23:19-69
+40        <activity android:name="com.easyclock.app.activities.HomeFuncionarioActivity" />
+40-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:9-72
+40-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:24:19-69
+41        <activity android:name="com.easyclock.app.activities.FaceIdActivity" />
+41-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:9-63
+41-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:25:19-60
+42        <activity android:name="com.easyclock.app.activities.JustificativasActivity" />
+42-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:9-71
+42-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:26:19-68
+43        <activity android:name="com.easyclock.app.activities.PerfilFuncionarioActivity" />
+43-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:9-74
+43-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:27:19-71
+44        <activity android:name="com.easyclock.app.activities.EspelhoPontoActivity" />
+44-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:9-69
+44-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:28:19-66
+45        <activity android:name="com.easyclock.app.activities.HoleriteActivity" />
+45-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:9-65
+45-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:29:19-62
+46        <activity android:name="com.easyclock.app.activities.FolgaFeriasActivity" />
+46-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:30:9-68
+46-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:30:19-65
+47
+48        <!-- RH Activities -->
+49        <activity android:name="com.easyclock.app.activities.PerfilRhActivity" />
+49-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:9-65
+49-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:33:19-62
+50        <activity android:name="com.easyclock.app.activities.ColaboradoresActivity" />
+50-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:9-70
+50-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:34:19-67
+51        <activity android:name="com.easyclock.app.activities.HoleriteRhActivity" />
+51-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:9-67
+51-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:35:19-64
+52        <activity android:name="com.easyclock.app.activities.JustificativasFuncionarioActivity" />
+52-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:9-82
+52-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:36:19-79
+53        <activity android:name="com.easyclock.app.activities.EspelhoPontoFuncionarioActivity" />
+53-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:9-80
+53-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:37:19-77
+54        <activity android:name="com.easyclock.app.activities.SolicitacoesFuncionarioActivity" />
+54-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:9-80
+54-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:38:19-77
+55        <activity android:name="com.easyclock.app.activities.SolicitacaoFolgaDetalheActivity" />
+55-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:9-80
+55-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:39:19-77
+56        <activity android:name="com.easyclock.app.activities.SolicitacaoAjusteDetalheActivity" />
+56-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:40:9-81
+56-->E:\Git\Easy-Clock\app\src\main\AndroidManifest.xml:40:19-78
+57
+58        <provider
+58-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+59            android:name="androidx.startup.InitializationProvider"
+59-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
+60            android:authorities="com.easyclock.app.androidx-startup"
+60-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
+61            android:exported="false" >
+61-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
+62            <meta-data
+62-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+63                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+63-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
+64                android:value="androidx.startup" />
+64-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\2cdc121741e7e1e216ad5ef39c6cdaad\workspace\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
+65            <meta-data
+65-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\a03d0caa35563687f8c02a3472fbfde7\workspace\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+66                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+66-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\a03d0caa35563687f8c02a3472fbfde7\workspace\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+67                android:value="androidx.startup" />
+67-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Raul\.gradle\caches\9.3.0\transforms\a03d0caa35563687f8c02a3472fbfde7\workspace\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+68            <meta-data
+68-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+69                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+69-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+70                android:value="androidx.startup" />
+70-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+71        </provider>
+72
+73        <receiver
+73-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+74            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+74-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+75            android:directBootAware="false"
+75-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+76            android:enabled="true"
+76-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+77            android:exported="true"
+77-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+78            android:permission="android.permission.DUMP" >
+78-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+79            <intent-filter>
+79-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+80                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+80-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+80-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+81            </intent-filter>
+82            <intent-filter>
+82-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+83                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+84            </intent-filter>
+85            <intent-filter>
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+86                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+87            </intent-filter>
+88            <intent-filter>
+88-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+89                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+89-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+89-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Raul\.gradle\caches\9.3.0\transforms\8d42803d1be6ad479011201540bf07c0\workspace\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+90            </intent-filter>
+91        </receiver>
+92    </application>
+93
+94</manifest>
