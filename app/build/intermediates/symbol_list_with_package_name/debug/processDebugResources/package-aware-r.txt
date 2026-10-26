@@ -3737,6 +3737,8 @@ id tvHorarioAjuste
 id tvInfoVendaFerias
 id tvInstrucaoFaceId
 id tvInstrucaoHoleriteRh
+id tvJaTemConta
+id tvJaTemEmpresa
 id tvJustificativaAjuste
 id tvMesAnoHolerite
 id tvNomeAnexo
@@ -4091,6 +4093,8 @@ string holerite
 string icon_content_description
 string invalidar_falta
 string item_view_role_description
+string ja_tem_conta
+string ja_tem_empresa
 string justificativas
 string login
 string logout

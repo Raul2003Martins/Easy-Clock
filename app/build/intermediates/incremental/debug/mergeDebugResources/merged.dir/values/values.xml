@@ -2042,6 +2042,8 @@
     <string description="Content description for an icon that appears in the title area of a dialog" name="icon_content_description">Dialog Icon</string>
     <string name="invalidar_falta">Invalidar Falta</string>
     <string name="item_view_role_description">Tab</string>
+    <string name="ja_tem_conta">Já tem uma conta, clique aqui.</string>
+    <string name="ja_tem_empresa">Já tem uma empresa registrada, clique aqui.</string>
     <string name="justificativas">Justificativas</string>
     <string name="login">Login</string>
     <string name="logout">Logout / Sair</string>

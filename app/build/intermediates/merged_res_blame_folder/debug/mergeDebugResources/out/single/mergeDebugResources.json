@@ -8,10 +8,6 @@
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\drawable\\ic_attach.xml"
     },
     {
-        "merged": "com.easyclock.app-debug-31:/layout_activity_login.xml.flat",
-        "source": "com.easyclock.app-main-33:/layout/activity_login.xml"
-    },
-    {
         "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\drawable_ic_search.xml.flat",
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\drawable\\ic_search.xml"
     },
@@ -100,12 +96,12 @@
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\drawable\\ic_calendar.xml"
     },
     {
-        "merged": "com.easyclock.app-debug-31:/layout_activity_perfil_funcionario.xml.flat",
-        "source": "com.easyclock.app-main-33:/layout/activity_perfil_funcionario.xml"
-    },
-    {
         "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\drawable_ic_edit.xml.flat",
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\drawable\\ic_edit.xml"
+    },
+    {
+        "merged": "com.easyclock.app-debug-31:/layout_activity_cadastro.xml.flat",
+        "source": "com.easyclock.app-main-33:/layout/activity_cadastro.xml"
     },
     {
         "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\layout_activity_solicitacao_folga_detalhe.xml.flat",
@@ -136,10 +132,6 @@
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\drawable\\ic_cancel.xml"
     },
     {
-        "merged": "com.easyclock.app-debug-31:/layout_activity_perfil_rh.xml.flat",
-        "source": "com.easyclock.app-main-33:/layout/activity_perfil_rh.xml"
-    },
-    {
         "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\drawable_ic_face_id.xml.flat",
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\drawable\\ic_face_id.xml"
     },
@@ -162,6 +154,10 @@
     {
         "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\layout_dialog_invalidar_falta.xml.flat",
         "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\layout\\dialog_invalidar_falta.xml"
+    },
+    {
+        "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\layout_activity_cadastro_empresa.xml.flat",
+        "source": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-main-33:\\layout\\activity_cadastro_empresa.xml"
     },
     {
         "merged": "C:\\Users\\Raul\\.gradle\\daemon\\9.3.0\\com.easyclock.app-debug-31:\\layout_activity_login.xml.flat",

@@ -121,11 +121,27 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <TextView
+            android:id="@+id/tvJaTemConta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ja_tem_conta"
+            android:textColor="@color/primary"
+            android:textSize="14sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:layout_marginTop="16dp"
+            android:onClick="irParaLogin"
+            app:layout_constraintTop_toBottomOf="@id/cardRegrasSenha"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCadastrar"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_marginTop="96dp"
+            android:layout_marginTop="32dp"
             android:text="@string/cadastrar"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -133,7 +149,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardRegrasSenha" />
+            app:layout_constraintTop_toBottomOf="@id/tvJaTemConta" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

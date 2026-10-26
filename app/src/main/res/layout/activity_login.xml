@@ -87,6 +87,7 @@
             android:focusable="true"
             android:padding="8dp"
             android:layout_marginTop="4dp"
+            android:onClick="abrirCadastroConta"
             app:layout_constraintTop_toBottomOf="@id/tvEsqueciSenha"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -102,6 +103,7 @@
             android:focusable="true"
             android:padding="8dp"
             android:layout_marginTop="4dp"
+            android:onClick="abrirCadastroEmpresa"
             app:layout_constraintTop_toBottomOf="@id/tvCadastrarLogin"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
