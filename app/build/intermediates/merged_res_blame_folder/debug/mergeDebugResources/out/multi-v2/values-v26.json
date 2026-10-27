@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.easyclock.app-mergeDebugResources-29:/values-v26/values-v26.xml",
+            "outputFile": "com.easyclock.app-mergeDebugResources-37:/values-v26/values-v26.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Raul\\.gradle\\caches\\9.3.0\\transforms\\05ca165c274a59bdcad0f5b20216aeef\\workspace\\transformed\\appcompat-1.6.1\\res\\values-v26\\values-v26.xml",
+                    "source": "C:\\Users\\Raul\\.gradle\\caches\\9.3.0\\transforms\\6cf49066c9fab556c5a34dcf394c14e5\\workspace\\transformed\\appcompat-1.6.1\\res\\values-v26\\values-v26.xml",
                     "from": {
                         "startLines": "2,3,4,8,12,16",
                         "startColumns": "4,4,4,4,4,4",
