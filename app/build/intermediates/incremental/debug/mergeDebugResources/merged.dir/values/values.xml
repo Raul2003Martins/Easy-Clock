@@ -2000,6 +2000,7 @@
     <string name="cadastre_sua_empresa_aqui">Cadastre sua empresa aqui</string>
     <string name="cadastro">Cadastro</string>
     <string name="cadastro_empresa">Cadastro de Empresa</string>
+    <string name="cadastro_funcionario">Cadastro de Funcionário</string>
     <string name="calendario_solicitacao">Calendário para Selecionar Período</string>
     <string name="call_notification_answer_action">Answer</string>
     <string name="call_notification_answer_video_action">Video</string>
@@ -2013,12 +2014,15 @@
     <string name="character_counter_pattern" translatable="false">%1$d/%2$d</string>
     <string name="clear_text_end_icon_content_description">Clear text</string>
     <string name="cnpj">CNPJ</string>
+    <string name="codigo_empresa">Código da empresa</string>
     <string name="colaboradores">Colaboradores</string>
     <string name="conceder_folga">Conceder Folga/Férias</string>
     <string name="confirmar_ajuste">Confirmar Ajuste de Ponto</string>
     <string name="confirmar_senha">Confirmar Senha</string>
     <string name="editar_banco_horas">Editar Banco de Horas</string>
     <string name="email">Email</string>
+    <string name="email_responsavel">E-mail do responsável</string>
+    <string name="endereco">Endereço</string>
     <string name="entrar">Entrar</string>
     <string name="enviar_justificativa">Enviar Nova Justificativa</string>
     <string name="enviar_justificativa_falta">Enviar Justificativa de Falta</string>
@@ -2160,7 +2164,10 @@
     <string name="nao_tem_conta_cadastrar">Não tem conta ainda? Clique aqui para cadastrar</string>
     <string name="negar_justificativa">Negar Justificativa</string>
     <string name="nome">Nome</string>
+    <string name="nome_completo">Nome completo</string>
     <string name="nome_empresa">Nome da Empresa</string>
+    <string name="nome_empresa_preview">Empresa encontrada</string>
+    <string name="nome_responsavel">Nome do responsável</string>
     <string name="password_toggle_content_description">Show password</string>
     <string name="path_password_eye" translatable="false">M12,4.5C7,4.5 2.73,7.61 1,12c1.73,4.39 6,7.5 11,7.5s9.27,-3.11 11,-7.5c-1.73,-4.39 -6,-7.5 -11,-7.5zM12,17c-2.76,0 -5,-2.24 -5,-5s2.24,-5 5,-5 5,2.24 5,5 -2.24,5 -5,5zM12,9c-1.66,0 -3,1.34 -3,3s1.34,3 3,3 3,-1.34 3,-3 -1.34,-3 -3,-3z</string>
     <string name="path_password_eye_mask_strike_through" translatable="false">M2,4.27 L19.73,22 L22.27,19.46 L4.54,1.73 L4.54,1 L23,1 L23,23 L1,23 L1,4.27 Z</string>

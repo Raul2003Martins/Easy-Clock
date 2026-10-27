@@ -4,9 +4,16 @@
 
     <!-- Autenticação -->
     <string name="cadastro">Cadastro</string>
+    <string name="cadastro_funcionario">Cadastro de Funcionário</string>
     <string name="cadastro_empresa">Cadastro de Empresa</string>
+    <string name="nome_completo">Nome completo</string>
+    <string name="codigo_empresa">Código da empresa</string>
+    <string name="nome_empresa_preview">Empresa encontrada</string>
     <string name="nome_empresa">Nome da Empresa</string>
     <string name="cnpj">CNPJ</string>
+    <string name="nome_responsavel">Nome do responsável</string>
+    <string name="endereco">Endereço</string>
+    <string name="email_responsavel">E-mail do responsável</string>
     <string name="login">Login</string>
     <string name="email">Email</string>
     <string name="senha">Senha</string>
