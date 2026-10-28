@@ -3262,6 +3262,7 @@ id browser_actions_menu_items
 id browser_actions_menu_view
 id btnAnexarComprovante
 id btnAnexarEConfirmarHolerite
+id btnAprovarSolicitacao
 id btnBaixarHolerite
 id btnBaterPonto
 id btnBaterPontoFaceId
@@ -3279,9 +3280,11 @@ id btnConfirmarRecusa
 id btnConfirmarVenda
 id btnEditarBancoHoras
 id btnEntrar
+id btnEnviarAjustePonto
 id btnEnviarJustificativaFalta
 id btnEspelhoPonto
 id btnEspelhoPontoRh
+id btnGerarConviteRh
 id btnGerarHolerite
 id btnInvalidarFalta
 id btnLogout
@@ -3290,6 +3293,7 @@ id btnNaoConcederAjuste
 id btnNaoConcederFolga
 id btnNegarJustificativa
 id btnPerfilHeader
+id btnRecusarSolicitacao
 id btnSelecionarArquivo
 id btnSolicitarAjuste
 id btnSolicitarFolga
@@ -3407,13 +3411,16 @@ id end
 id endToStart
 id enterAlways
 id enterAlwaysCollapsed
+id etDataAjustePonto
 id etDescricaoJustificativa
 id etDiaFalta
 id etDiasVenda
 id etEmailLogin
 id etEmailPerfil
 id etEmailPerfilRh
+id etHorarioAjustePonto
 id etMesAnoHolerite
+id etMotivoAjustePonto
 id etMotivoRecusa
 id etNomeFuncionarioHolerite
 id etNomePerfil
@@ -3602,6 +3609,7 @@ id parent_matrix
 id password_toggle
 id path
 id pathRelative
+id pbLoadingColaboradores
 id peekHeight
 id percent
 id pin
@@ -3690,6 +3698,7 @@ id stretch
 id submenuarrow
 id submit_area
 id supportScrollUp
+id tabLayoutColaboradores
 id tabMode
 id tag_accessibility_actions
 id tag_accessibility_clickable_spans
@@ -3724,6 +3733,7 @@ id tilCnpjEmpresa
 id tilCodigoEmpresa
 id tilConfirmarSenhaEmpresa
 id tilConfirmarSenhaFuncionario
+id tilDataAjustePonto
 id tilDescricaoJustificativa
 id tilDiaFalta
 id tilDiasVenda
@@ -3733,7 +3743,9 @@ id tilEmailLogin
 id tilEmailPerfil
 id tilEmailPerfilRh
 id tilEnderecoEmpresa
+id tilHorarioAjustePonto
 id tilMesAnoHolerite
+id tilMotivoAjustePonto
 id tilMotivoRecusa
 id tilNomeEmpresa
 id tilNomeFuncionario
@@ -3751,6 +3763,7 @@ id title
 id titleDividerNoCustom
 id title_template
 id toggle
+id toolbarAjustePonto
 id toolbarColaboradores
 id toolbarEspelhoPonto
 id toolbarEspelhoPontoRh
@@ -3792,6 +3805,8 @@ id tvDialogJustificativaTitulo
 id tvDialogRecusaSubtitulo
 id tvDialogRecusaTitulo
 id tvDialogVendaTitulo
+id tvEmailSolicitante
+id tvEmptyStateColaboradores
 id tvEntrada1
 id tvEntrada2
 id tvEsqueciSenha
@@ -3811,6 +3826,7 @@ id tvNomeAnexo
 id tvNomeArquivoAnexo
 id tvNomeColaborador
 id tvNomeEmpresaPreview
+id tvNomeSolicitante
 id tvObservacoesFolga
 id tvPeriodoSolicitado
 id tvRegrasDescricao
@@ -3825,6 +3841,7 @@ id tvSaldoHorasValor
 id tvSaldoHorasValorRh
 id tvStatusJustificativa
 id tvStatusSolicitacao
+id tvStatusSolicitacaoCadastro
 id tvTextoJustificativa
 id tvTipoSolicitacao
 id tvTitleCadastro
@@ -3971,6 +3988,7 @@ layout abc_search_dropdown_item_icons_2line
 layout abc_search_view
 layout abc_select_dialog_material
 layout abc_tooltip
+layout activity_ajuste_ponto
 layout activity_cadastro
 layout activity_cadastro_empresa
 layout activity_colaboradores
@@ -4018,6 +4036,7 @@ layout item_historico_ponto
 layout item_holerite
 layout item_justificativa
 layout item_solicitacao
+layout item_solicitacao_cadastro
 layout m3_alert_dialog
 layout m3_alert_dialog_actions
 layout m3_alert_dialog_title
@@ -4083,6 +4102,7 @@ mipmap ic_launcher
 mipmap ic_launcher_round
 plurals mtrl_badge_content_description
 raw firebase_common_keep
+string aba_funcionarios
 string abc_action_bar_home_description
 string abc_action_bar_up_description
 string abc_action_menu_overflow_description
@@ -4110,6 +4130,7 @@ string abc_searchview_description_voice
 string abc_shareactionprovider_share_with
 string abc_shareactionprovider_share_with_application
 string abc_toolbar_collapse_description
+string ajuste_de_ponto
 string android_credentials_TYPE_PASSWORD_CREDENTIAL
 string androidx_credentials_TYPE_PUBLIC_KEY_CREDENTIAL
 string androidx_startup
@@ -4117,6 +4138,8 @@ string anexar_holerite
 string anexo
 string app_name
 string appbar_scrolling_view_behavior
+string aprovar
+string banco_horas_indisponivel
 string bater_ponto_trancado
 string botao_perfil
 string bottom_sheet_behavior
@@ -4167,6 +4190,7 @@ string conceder_folga
 string confirmar_ajuste
 string confirmar_senha
 string copy_toast_msg
+string data_do_ponto
 string editar_banco_horas
 string email
 string email_responsavel
@@ -4174,6 +4198,7 @@ string endereco
 string entrar
 string enviar_justificativa
 string enviar_justificativa_falta
+string enviar_solicitacao
 string error_a11y_label
 string error_icon_content_description
 string espelho_de_ponto
@@ -4186,12 +4211,19 @@ string fallback_menu_item_copy_link
 string fallback_menu_item_open_in_browser
 string fallback_menu_item_share_link
 string folga_ferias
+string gcm_defaultSenderId
+string gerar_convite
 string gerar_holerite
+string google_api_key
+string google_app_id
+string google_crash_reporting_api_key
+string google_storage_bucket
 string hide_bottom_view_on_scroll_behavior
 string historico_de_ponto
 string historico_solicitacoes_ajuste
 string historico_solicitacoes_folga
 string holerite
+string horario_ajustado
 string icon_content_description
 string invalidar_falta
 string item_view_role_description
@@ -4240,6 +4272,7 @@ string material_timepicker_select_time
 string material_timepicker_text_input_mode_description
 string mes_ano
 string motivo_negocio
+string motivo_solicitacao
 string mtrl_badge_numberless_content_description
 string mtrl_checkbox_button_icon_path_checked
 string mtrl_checkbox_button_icon_path_group_name
@@ -4306,6 +4339,7 @@ string nao_conceder_ajuste
 string nao_conceder_folga
 string nao_tem_conta_cadastrar
 string negar_justificativa
+string nenhum_registro_encontrado
 string nome
 string nome_completo
 string nome_empresa
@@ -4318,8 +4352,10 @@ string path_password_eye_mask_visible
 string path_password_strike_through
 string perfil
 string pesquisar_colaborador
+string project_id
 string realizar_batimento_ponto
 string reconhecimento_facial
+string recusar
 string regras_senha_descricao
 string regras_senha_titulo
 string saldo_de_horas
@@ -4332,6 +4368,7 @@ string senha
 string setor
 string side_sheet_accessibility_pane_title
 string side_sheet_behavior
+string sincronizando_horario
 string solicitacoes
 string solicitar_ajuste_ponto
 string solicitar_folga_ferias

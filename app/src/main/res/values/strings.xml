@@ -34,6 +34,7 @@
     <string name="reconhecimento_facial">Reconhecimento Facial (FaceID)</string>
     <string name="faceid_instrucao">Posicione seu rosto na câmera para liberar o batimento de ponto.</string>
     <string name="bater_ponto_trancado">Aguardando FaceID...</string>
+    <string name="sincronizando_horario">Sincronizando horário...</string>
 
     <!-- Perfil -->
     <string name="perfil">Perfil</string>
@@ -46,6 +47,11 @@
     <!-- Espelho de Ponto -->
     <string name="saldo_de_horas">Saldo de horas:</string>
     <string name="solicitar_ajuste_ponto">Solicitar Ajuste de Ponto</string>
+    <string name="ajuste_de_ponto">Ajuste de Ponto</string>
+    <string name="data_do_ponto">Data do ponto</string>
+    <string name="horario_ajustado">Horário a ser ajustado</string>
+    <string name="motivo_solicitacao">Motivo da solicitação</string>
+    <string name="enviar_solicitacao">Enviar Solicitação</string>
     <string name="enviar_justificativa_falta">Enviar Justificativa de Falta</string>
     <string name="solicitar_folga_ferias">Solicitar Folga / Férias</string>
     <string name="historico_de_ponto">Histórico de Ponto</string>
@@ -73,6 +79,12 @@
 
     <!-- Telas RH -->
     <string name="colaboradores">Colaboradores</string>
+    <string name="aba_funcionarios">Funcionários</string>
+    <string name="nenhum_registro_encontrado">Nenhum registro encontrado.</string>
+    <string name="banco_horas_indisponivel">Banco de horas indisponível</string>
+    <string name="gerar_convite">Gerar Convite</string>
+    <string name="aprovar">Aprovar</string>
+    <string name="recusar">Recusar</string>
     <string name="pesquisar_colaborador">Pesquisar colaborador...</string>
     <string name="invalidar_falta">Invalidar Falta</string>
     <string name="negar_justificativa">Negar Justificativa</string>

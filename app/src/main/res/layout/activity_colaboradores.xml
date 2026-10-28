@@ -48,18 +48,66 @@
         </com.google.android.material.textfield.TextInputLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Lista de Colaboradores -->
+    <!-- Abas Funcionários e Solicitações -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutColaboradores"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        app:tabIndicatorColor="@color/primary"
+        app:tabSelectedTextColor="@color/primary"
+        app:tabTextColor="@color/text_secondary"
+        app:layout_constraintTop_toBottomOf="@id/cardSearchColaborador"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/aba_funcionarios" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/solicitacoes" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- Lista de Colaboradores / Solicitações -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvColaboradores"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_colaborador"
-        app:layout_constraintTop_toBottomOf="@id/cardSearchColaborador"
+        app:layout_constraintTop_toBottomOf="@id/tabLayoutColaboradores"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/pbLoadingColaboradores"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rvColaboradores"
+        app:layout_constraintBottom_toBottomOf="@id/rvColaboradores"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvEmptyStateColaboradores"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/nenhum_registro_encontrado"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rvColaboradores"
+        app:layout_constraintBottom_toBottomOf="@id/rvColaboradores"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

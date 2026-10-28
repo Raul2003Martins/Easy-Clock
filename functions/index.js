@@ -2,6 +2,7 @@ const {setGlobalOptions} = require("firebase-functions/v2");
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const {FieldValue} = require("firebase-admin/firestore");
 const crypto = require("crypto");
 
 admin.initializeApp();
@@ -276,7 +277,7 @@ exports.cadastrarEmpresa = onCall(async (request) => {
         );
       }
 
-      const now = admin.firestore.FieldValue.serverTimestamp();
+      const now = FieldValue.serverTimestamp();
 
       transaction.set(cnpjLockRef, {
         empresaId: empresaId,
@@ -563,10 +564,10 @@ exports.cadastrarFuncionario = onCall(async (request) => {
         );
       }
 
-      const now = admin.firestore.FieldValue.serverTimestamp();
+      const now = FieldValue.serverTimestamp();
 
       transaction.update(conviteRef, {
-        quantidadeUsos: admin.firestore.FieldValue.increment(1),
+        quantidadeUsos: FieldValue.increment(1),
       });
 
       transaction.set(funcionarioRef, {
@@ -613,5 +614,93 @@ exports.cadastrarFuncionario = onCall(async (request) => {
       "Cadastro de funcionário realizado com sucesso! Aguarde aprovação do RH.",
     uid: userRecord.uid,
     empresaId: targetEmpresaId,
+  };
+});
+
+/**
+ * Callable function for RH users to generate a new invitation code.
+ */
+exports.gerarConviteEmpresa = onCall(async (request) => {
+  verificarAppCheck(request);
+
+  if (!request.auth) {
+    throw new HttpsError(
+        "unauthenticated",
+        "O usuário precisa estar autenticado para gerar convites.",
+    );
+  }
+
+  const uid = request.auth.uid;
+  await verificarRateLimit(`convite:${uid}`);
+
+  const funcDoc = await db.collection("funcionarios").doc(uid).get();
+  if (!funcDoc.exists) {
+    throw new HttpsError(
+        "not-found",
+        "Cadastro do usuário não encontrado.",
+    );
+  }
+
+  const funcData = funcDoc.data();
+  if (funcData.perfil !== "RH" || funcData.status !== "ATIVO") {
+    throw new HttpsError(
+        "permission-denied",
+        "Apenas usuários com perfil RH ativo podem gerar convites.",
+    );
+  }
+
+  const empresaId = funcData.empresaId;
+  if (!empresaId) {
+    throw new HttpsError(
+        "failed-precondition",
+        "Usuário RH não possui empresa vinculada.",
+    );
+  }
+
+  const empresaDoc = await db.collection("empresa").doc(empresaId).get();
+  if (!empresaDoc.exists || empresaDoc.data().status !== "ATIVA") {
+    throw new HttpsError(
+        "failed-precondition",
+        "A empresa do usuário RH não está ativa.",
+    );
+  }
+
+  const rawInviteBytes = crypto.randomBytes(16);
+  const rawInviteCode = rawInviteBytes.toString("hex").toUpperCase();
+  const codigoHash = crypto
+      .createHash("sha256")
+      .update(rawInviteCode)
+      .digest("hex");
+
+  const conviteRef = db.collection("convitesEmpresa").doc();
+  const now = FieldValue.serverTimestamp();
+
+  await conviteRef.set({
+    empresaId: empresaId,
+    codigoHash: codigoHash,
+    ativo: true,
+    criadoEm: now,
+    expiraEm: null,
+    limiteUsos: null,
+    quantidadeUsos: 0,
+  });
+
+  return {
+    sucesso: true,
+    mensagem: "Convite gerado com sucesso.",
+    codigoConvite: rawInviteCode,
+    conviteId: conviteRef.id,
+  };
+});
+
+/**
+ * Callable function to obtain the current server timestamp in UTC milliseconds.
+ */
+exports.obterHorarioServidor = onCall(async (request) => {
+  verificarAppCheck(request);
+
+  return {
+    sucesso: true,
+    timestampServerMs: Date.now(),
   };
 });

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.easyclock.app-mergeDebugResources-37:/values-ldltr-v21/values-ldltr-v21.xml",
+            "outputFile": "com.easyclock.app-mergeDebugResources-38:/values-ldltr-v21/values-ldltr-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Raul\\.gradle\\caches\\9.3.0\\transforms\\6cf49066c9fab556c5a34dcf394c14e5\\workspace\\transformed\\appcompat-1.6.1\\res\\values-ldltr-v21\\values-ldltr-v21.xml",
+                    "source": "C:\\Users\\Raul\\.gradle\\caches\\9.3.0\\transforms\\b0b1c1fa20041b35004547a003634f97\\workspace\\transformed\\appcompat-1.6.1\\res\\values-ldltr-v21\\values-ldltr-v21.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

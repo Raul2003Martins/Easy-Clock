@@ -20,9 +20,13 @@
     <color name="text_hint">#BDBDBD</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <string name="aba_funcionarios">Funcionários</string>
+    <string name="ajuste_de_ponto">Ajuste de Ponto</string>
     <string name="anexar_holerite">Anexar Holerite e Confirmar</string>
     <string name="anexo">Anexo (Foto / PDF)</string>
     <string name="app_name">Easy Clock</string>
+    <string name="aprovar">Aprovar</string>
+    <string name="banco_horas_indisponivel">Banco de horas indisponível</string>
     <string name="bater_ponto_trancado">Aguardando FaceID...</string>
     <string name="botao_perfil">Perfil</string>
     <string name="cadastrar">Cadastrar</string>
@@ -37,6 +41,7 @@
     <string name="conceder_folga">Conceder Folga/Férias</string>
     <string name="confirmar_ajuste">Confirmar Ajuste de Ponto</string>
     <string name="confirmar_senha">Confirmar Senha</string>
+    <string name="data_do_ponto">Data do ponto</string>
     <string name="editar_banco_horas">Editar Banco de Horas</string>
     <string name="email">Email</string>
     <string name="email_responsavel">E-mail do responsável</string>
@@ -44,15 +49,23 @@
     <string name="entrar">Entrar</string>
     <string name="enviar_justificativa">Enviar Nova Justificativa</string>
     <string name="enviar_justificativa_falta">Enviar Justificativa de Falta</string>
+    <string name="enviar_solicitacao">Enviar Solicitação</string>
     <string name="espelho_de_ponto">Espelho de Ponto</string>
     <string name="esqueci_minha_senha">Esqueci minha senha</string>
     <string name="faceid_instrucao">Posicione seu rosto na câmera para liberar o batimento de ponto.</string>
     <string name="folga_ferias">Folga / Férias</string>
+    <string name="gcm_defaultSenderId" translatable="false">426869746573</string>
+    <string name="gerar_convite">Gerar Convite</string>
     <string name="gerar_holerite">Gerar Holerite</string>
+    <string name="google_api_key" translatable="false">AIzaSyArC_rICU_egLf9ckmcEXDQKbgdy0zebsI</string>
+    <string name="google_app_id" translatable="false">1:426869746573:android:7e7604c458db9277ccabc4</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyArC_rICU_egLf9ckmcEXDQKbgdy0zebsI</string>
+    <string name="google_storage_bucket" translatable="false">easyclock-f2e8f.firebasestorage.app</string>
     <string name="historico_de_ponto">Histórico de Ponto</string>
     <string name="historico_solicitacoes_ajuste">Histórico de Solicitações de Ajuste de Ponto</string>
     <string name="historico_solicitacoes_folga">Histórico de Solicitações de Folga/Férias</string>
     <string name="holerite">Holerite</string>
+    <string name="horario_ajustado">Horário a ser ajustado</string>
     <string name="invalidar_falta">Invalidar Falta</string>
     <string name="ja_tem_conta">Já tem uma conta, clique aqui.</string>
     <string name="ja_tem_empresa">Já tem uma empresa registrada, clique aqui.</string>
@@ -61,10 +74,12 @@
     <string name="logout">Logout / Sair</string>
     <string name="mes_ano">Mês / Ano</string>
     <string name="motivo_negocio">Motivo da Recusa (Negócio)</string>
+    <string name="motivo_solicitacao">Motivo da solicitação</string>
     <string name="nao_conceder_ajuste">Não Conceder Ajuste</string>
     <string name="nao_conceder_folga">Não Conceder Folga/Férias</string>
     <string name="nao_tem_conta_cadastrar">Não tem conta ainda? Clique aqui para cadastrar</string>
     <string name="negar_justificativa">Negar Justificativa</string>
+    <string name="nenhum_registro_encontrado">Nenhum registro encontrado.</string>
     <string name="nome">Nome</string>
     <string name="nome_completo">Nome completo</string>
     <string name="nome_empresa">Nome da Empresa</string>
@@ -72,14 +87,17 @@
     <string name="nome_responsavel">Nome do responsável</string>
     <string name="perfil">Perfil</string>
     <string name="pesquisar_colaborador">Pesquisar colaborador...</string>
+    <string name="project_id" translatable="false">easyclock-f2e8f</string>
     <string name="realizar_batimento_ponto">Bater Ponto</string>
     <string name="reconhecimento_facial">Reconhecimento Facial (FaceID)</string>
+    <string name="recusar">Recusar</string>
     <string name="regras_senha_descricao">• Mínimo 8 caracteres\n• Pelo menos 1 letra maiúscula\n• Pelo menos 1 letra minúscula\n• Pelo menos 1 caracter especial\n• Pelo menos 1 número</string>
     <string name="regras_senha_titulo">Siga as regras da senha abaixo:</string>
     <string name="saldo_de_horas">Saldo de horas:</string>
     <string name="selecionar_dia_falta">Selecionar dia da falta</string>
     <string name="senha">Senha</string>
     <string name="setor">Setor</string>
+    <string name="sincronizando_horario">Sincronizando horário...</string>
     <string name="solicitacoes">Solicitações</string>
     <string name="solicitar_ajuste_ponto">Solicitar Ajuste de Ponto</string>
     <string name="solicitar_folga_ferias">Solicitar Folga / Férias</string>

@@ -1,5 +1,7 @@
 package com.easyclock.app.service;
 
+import android.util.Log;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
@@ -18,7 +20,7 @@ public class AutenticacaoService {
 
     public AutenticacaoService() {
         auth = FirebaseAuth.getInstance();
-        functions = FirebaseFunctions.getInstance();
+        functions = FirebaseFunctions.getInstance("southamerica-east1");
     }
 
     // --------------------------------------------------
@@ -66,6 +68,15 @@ public class AutenticacaoService {
             );
         }
 
+        Log.d("AutenticacaoService", "Chamando cadastrarEmpresa: [nomeEmpresa len=" +
+                nomeEmpresa.trim().length() +
+                ", cnpj len=" + cnpj.trim().length() +
+                ", endereco len=" + endereco.trim().length() +
+                ", nomeResponsavel len=" + nomeResponsavel.trim().length() +
+                ", emailResponsavel len=" + emailResponsavel.trim().length() +
+                ", senhaPresente=" + (senha != null) +
+                ", confirmarSenhaPresente=" + (confirmarSenha != null) + "]");
+
         Map<String, Object> dados = new HashMap<>();
 
         dados.put("nomeEmpresa", nomeEmpresa.trim());
@@ -80,6 +91,7 @@ public class AutenticacaoService {
                 emailResponsavel.trim()
         );
         dados.put("senha", senha);
+        dados.put("confirmarSenha", confirmarSenha);
 
         // O backend cria a empresa e o primeiro RH.
         // Perfil e status não são enviados pelo cliente.
@@ -129,6 +141,13 @@ public class AutenticacaoService {
             );
         }
 
+        Log.d("AutenticacaoService", "Chamando cadastrarFuncionario: [nome len=" +
+                nome.trim().length() +
+                ", email len=" + email.trim().length() +
+                ", codigoConvitePresente=" + (!codigoConvite.trim().isEmpty()) +
+                ", senhaPresente=" + (senha != null) +
+                ", confirmarSenhaPresente=" + (confirmarSenha != null) + "]");
+
         Map<String, Object> dados = new HashMap<>();
 
         dados.put("nome", nome.trim());
@@ -138,12 +157,69 @@ public class AutenticacaoService {
                 codigoConvite.trim()
         );
         dados.put("senha", senha);
+        dados.put("confirmarSenha", confirmarSenha);
 
         // O backend valida o convite, associa a
         // empresa e cria o funcionário pendente.
         return functions
                 .getHttpsCallable("cadastrarFuncionario")
                 .call(dados);
+    }
+
+    // --------------------------------------------------
+    // GERAR CONVITE EMPRESA (RH)
+    // --------------------------------------------------
+
+    public Task<HttpsCallableResult> gerarConviteEmpresa() {
+        if (!estaAutenticado()) {
+            return erro("Usuário não autenticado.");
+        }
+
+        return functions
+                .getHttpsCallable("gerarConviteEmpresa")
+                .call();
+    }
+
+    // --------------------------------------------------
+    // APROVAR E RECUSAR FUNCIONÁRIO (RH)
+    // --------------------------------------------------
+
+    public Task<HttpsCallableResult> aprovarFuncionario(String funcionarioUid) {
+        if (!estaAutenticado()) {
+            return erro("Usuário não autenticado.");
+        }
+        if (campoVazio(funcionarioUid)) {
+            return erro("UID do funcionário inválido.");
+        }
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("funcionarioUid", funcionarioUid.trim());
+        return functions
+                .getHttpsCallable("aprovarFuncionario")
+                .call(dados);
+    }
+
+    public Task<HttpsCallableResult> recusarFuncionario(String funcionarioUid) {
+        if (!estaAutenticado()) {
+            return erro("Usuário não autenticado.");
+        }
+        if (campoVazio(funcionarioUid)) {
+            return erro("UID do funcionário inválido.");
+        }
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("funcionarioUid", funcionarioUid.trim());
+        return functions
+                .getHttpsCallable("recusarFuncionario")
+                .call(dados);
+    }
+
+    // --------------------------------------------------
+    // HORÁRIO DO SERVIDOR (SINCRONIZAÇÃO)
+    // --------------------------------------------------
+
+    public Task<HttpsCallableResult> obterHorarioServidor() {
+        return functions
+                .getHttpsCallable("obterHorarioServidor")
+                .call();
     }
 
     // --------------------------------------------------
