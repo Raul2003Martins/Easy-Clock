@@ -240,23 +240,39 @@ public class AutenticacaoService {
         return db.collection("convitesLookup").document(codigoHash).get()
                 .continueWithTask(task -> {
                     if (!task.isSuccessful() || task.getResult() == null || !task.getResult().exists()) {
+                        Exception taskEx = task.getException();
+                        if (taskEx != null && taskEx.getMessage() != null &&
+                                (taskEx.getMessage().contains("PERMISSION_DENIED") || taskEx.getMessage().contains("permissions"))) {
+                            throw new Exception("Sem permissão para consultar o convite. Verifique sua conexão.");
+                        }
                         throw new Exception("Código de convite inválido ou não encontrado.");
                     }
 
                     Boolean ativo = task.getResult().getBoolean("ativo");
                     if (ativo == null || !ativo) {
-                        throw new Exception("Código de convite desativado.");
+                        throw new Exception("Este código de convite está desativado.");
+                    }
+
+                    Long limiteUsos = task.getResult().getLong("limiteUsos");
+                    Long quantidadeUsos = task.getResult().getLong("quantidadeUsos");
+                    if (limiteUsos != null && quantidadeUsos != null && quantidadeUsos >= limiteUsos) {
+                        throw new Exception("Este código de convite atingiu o limite máximo de utilizações.");
                     }
 
                     String empresaId = task.getResult().getString("empresaId");
                     if (empresaId == null || empresaId.trim().isEmpty()) {
-                        throw new Exception("Empresa do convite não encontrada.");
+                        throw new Exception("Empresa associada ao convite não foi encontrada.");
                     }
 
                     return auth.createUserWithEmailAndPassword(emailNorm, senha)
                             .continueWithTask(authTask -> {
                                 if (!authTask.isSuccessful() || authTask.getResult() == null || authTask.getResult().getUser() == null) {
-                                    throw authTask.getException() != null ? authTask.getException() : new Exception("Erro ao criar conta no Firebase Auth.");
+                                    Exception authEx = authTask.getException();
+                                    if (authEx != null && authEx.getMessage() != null &&
+                                            (authEx.getMessage().contains("already in use") || authEx.getMessage().contains("email-already-in-use"))) {
+                                        throw new Exception("O e-mail informado já está cadastrado.");
+                                    }
+                                    throw authEx != null ? authEx : new Exception("Erro ao criar conta no Firebase Auth.");
                                 }
 
                                 String uid = authTask.getResult().getUser().getUid();
@@ -283,7 +299,7 @@ public class AutenticacaoService {
                                         if (auth.getCurrentUser() != null) {
                                             auth.getCurrentUser().delete();
                                         }
-                                        throw bTask.getException() != null ? bTask.getException() : new Exception("Erro ao salvar dados do funcionário.");
+                                        throw bTask.getException() != null ? bTask.getException() : new Exception("Erro ao salvar dados do funcionário no Firestore.");
                                     }
 
                                     auth.signOut();

@@ -55,7 +55,9 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ===============================================================
     // Collection: funcionario
+    // ===============================================================
     match /funcionario/{uid} {
       // 1. Get own profile (even when pending approval or inativo)
       allow get: if isOwner(uid);
@@ -91,7 +93,9 @@ service cloud.firestore {
         request.resource.data.status in ['ATIVO', 'RECUSADO'];
     }
 
+    // ===============================================================
     // Collection: empresa
+    // ===============================================================
     match /empresa/{empresaId} {
       allow get: if pertenceAEmpresa(empresaId);
 
@@ -103,17 +107,21 @@ service cloud.firestore {
       allow list, update, delete: if false;
     }
 
+    // ===============================================================
     // Collection: cnpjs (CNPJ lock for uniqueness)
+    // ===============================================================
     match /cnpjs/{cnpj} {
       allow get: if isAuthenticated();
       allow create: if isAuthenticated() && !exists(/databases/$(database)/documents/cnpjs/$(cnpj));
       allow list, update, delete: if false;
     }
 
+    // ===============================================================
     // Collection: convitesLookup (Document ID = sha256 hash)
+    // ===============================================================
     match /convitesLookup/{codigoHash} {
-      // Lookup by exact hash ID allowed for authenticated users during registration
-      allow get: if isAuthenticated();
+      // Lookup by exact hash ID allowed during registration before/after auth
+      allow get: if true;
 
       allow create: if isAuthenticated() && (
         (hasFuncionarioDoc() && isRhAtivo() && request.resource.data.empresaId == getFuncionarioData().empresaId) ||
@@ -124,7 +132,9 @@ service cloud.firestore {
       allow list, delete: if false;
     }
 
+    // ===============================================================
     // Collection: convitesEmpresa
+    // ===============================================================
     match /convitesEmpresa/{conviteId} {
       allow get, list: if isRhAtivo() &&
         resource.data.empresaId == getFuncionarioData().empresaId;
@@ -137,7 +147,9 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ===============================================================
     // Collection: auditoriaAprovacoes
+    // ===============================================================
     match /auditoriaAprovacoes/{auditId} {
       allow create: if isRhAtivo() &&
         request.resource.data.rhUid == request.auth.uid &&
@@ -149,7 +161,9 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ===============================================================
     // Collection: rateLimits
+    // ===============================================================
     match /rateLimits/{rateLimitId} {
       allow read, write: if false;
     }
