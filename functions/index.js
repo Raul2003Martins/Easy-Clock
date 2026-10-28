@@ -265,7 +265,7 @@ exports.cadastrarEmpresa = onCall(async (request) => {
 
   const conviteRef = db.collection("convitesEmpresa").doc();
   const cnpjLockRef = db.collection("cnpjs").doc(cnpjClean);
-  const funcionarioRef = db.collection("funcionarios").doc(userRecord.uid);
+  const funcionarioRef = db.collection("funcionario").doc(userRecord.uid);
 
   try {
     await db.runTransaction(async (transaction) => {
@@ -508,7 +508,7 @@ exports.cadastrarFuncionario = onCall(async (request) => {
     );
   }
 
-  const funcionarioRef = db.collection("funcionarios").doc(userRecord.uid);
+  const funcionarioRef = db.collection("funcionario").doc(userRecord.uid);
   const conviteRef = db
       .collection("convitesEmpresa")
       .doc(conviteDocInitial.id);
@@ -633,7 +633,7 @@ exports.gerarConviteEmpresa = onCall(async (request) => {
   const uid = request.auth.uid;
   await verificarRateLimit(`convite:${uid}`);
 
-  const funcDoc = await db.collection("funcionarios").doc(uid).get();
+  const funcDoc = await db.collection("funcionario").doc(uid).get();
   if (!funcDoc.exists) {
     throw new HttpsError(
         "not-found",
@@ -702,5 +702,185 @@ exports.obterHorarioServidor = onCall(async (request) => {
   return {
     sucesso: true,
     timestampServerMs: Date.now(),
+  };
+});
+
+/**
+ * Callable function for RH users to approve a pending employee registration.
+ */
+exports.aprovarFuncionario = onCall(async (request) => {
+  verificarAppCheck(request);
+
+  if (!request.auth) {
+    throw new HttpsError(
+        "unauthenticated",
+        "O usuário precisa estar autenticado para aprovar cadastros.",
+    );
+  }
+
+  const {funcionarioUid} = request.data || {};
+  if (!validarString(funcionarioUid, 128, 1)) {
+    throw new HttpsError(
+        "invalid-argument",
+        "O UID do funcionário é obrigatório.",
+    );
+  }
+
+  const rhUid = request.auth.uid;
+  await verificarRateLimit(`aprovar:${rhUid}`);
+
+  const rhDoc = await db.collection("funcionario").doc(rhUid).get();
+  if (!rhDoc.exists) {
+    throw new HttpsError(
+        "not-found",
+        "Cadastro do usuário RH não encontrado.",
+    );
+  }
+
+  const rhData = rhDoc.data();
+  if (rhData.perfil !== "RH" || rhData.status !== "ATIVO") {
+    throw new HttpsError(
+        "permission-denied",
+        "Apenas usuários com perfil RH ativo podem aprovar cadastros.",
+    );
+  }
+
+  const rhEmpresaId = rhData.empresaId;
+  const targetRef = db.collection("funcionario").doc(funcionarioUid);
+  const auditRef = db.collection("auditoriaAprovacoes").doc();
+
+  await db.runTransaction(async (transaction) => {
+    const targetDoc = await transaction.get(targetRef);
+    if (!targetDoc.exists) {
+      throw new HttpsError(
+          "not-found",
+          "O funcionário solicitado não foi encontrado.",
+      );
+    }
+
+    const targetData = targetDoc.data();
+    if (targetData.empresaId !== rhEmpresaId) {
+      throw new HttpsError(
+          "permission-denied",
+          "Você não possui permissão para gerenciar este funcionário.",
+      );
+    }
+
+    if (targetData.status !== "PENDENTE_APROVACAO") {
+      throw new HttpsError(
+          "failed-precondition",
+          "O funcionário não está pendente de aprovação.",
+      );
+    }
+
+    const now = FieldValue.serverTimestamp();
+
+    transaction.update(targetRef, {
+      status: "ATIVO",
+    });
+
+    transaction.set(auditRef, {
+      rhUid: rhUid,
+      funcionarioUid: funcionarioUid,
+      empresaId: rhEmpresaId,
+      acao: "APROVAR",
+      criadoEm: now,
+    });
+  });
+
+  return {
+    sucesso: true,
+    mensagem: "Funcionário aprovado com sucesso.",
+    funcionarioUid: funcionarioUid,
+  };
+});
+
+/**
+ * Callable function for RH users to reject a pending employee registration.
+ */
+exports.recusarFuncionario = onCall(async (request) => {
+  verificarAppCheck(request);
+
+  if (!request.auth) {
+    throw new HttpsError(
+        "unauthenticated",
+        "O usuário precisa estar autenticado para recusar cadastros.",
+    );
+  }
+
+  const {funcionarioUid} = request.data || {};
+  if (!validarString(funcionarioUid, 128, 1)) {
+    throw new HttpsError(
+        "invalid-argument",
+        "O UID do funcionário é obrigatório.",
+    );
+  }
+
+  const rhUid = request.auth.uid;
+  await verificarRateLimit(`recusar:${rhUid}`);
+
+  const rhDoc = await db.collection("funcionario").doc(rhUid).get();
+  if (!rhDoc.exists) {
+    throw new HttpsError(
+        "not-found",
+        "Cadastro do usuário RH não encontrado.",
+    );
+  }
+
+  const rhData = rhDoc.data();
+  if (rhData.perfil !== "RH" || rhData.status !== "ATIVO") {
+    throw new HttpsError(
+        "permission-denied",
+        "Apenas usuários com perfil RH ativo podem recusar cadastros.",
+    );
+  }
+
+  const rhEmpresaId = rhData.empresaId;
+  const targetRef = db.collection("funcionario").doc(funcionarioUid);
+  const auditRef = db.collection("auditoriaAprovacoes").doc();
+
+  await db.runTransaction(async (transaction) => {
+    const targetDoc = await transaction.get(targetRef);
+    if (!targetDoc.exists) {
+      throw new HttpsError(
+          "not-found",
+          "O funcionário solicitado não foi encontrado.",
+      );
+    }
+
+    const targetData = targetDoc.data();
+    if (targetData.empresaId !== rhEmpresaId) {
+      throw new HttpsError(
+          "permission-denied",
+          "Você não possui permissão para gerenciar este funcionário.",
+      );
+    }
+
+    if (targetData.status !== "PENDENTE_APROVACAO") {
+      throw new HttpsError(
+          "failed-precondition",
+          "O funcionário não está pendente de aprovação.",
+      );
+    }
+
+    const now = FieldValue.serverTimestamp();
+
+    transaction.update(targetRef, {
+      status: "RECUSADO",
+    });
+
+    transaction.set(auditRef, {
+      rhUid: rhUid,
+      funcionarioUid: funcionarioUid,
+      empresaId: rhEmpresaId,
+      acao: "RECUSAR",
+      criadoEm: now,
+    });
+  });
+
+  return {
+    sucesso: true,
+    mensagem: "Cadastro do funcionário recusado com sucesso.",
+    funcionarioUid: funcionarioUid,
   };
 });

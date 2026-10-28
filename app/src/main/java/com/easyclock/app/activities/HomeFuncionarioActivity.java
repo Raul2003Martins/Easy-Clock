@@ -109,10 +109,8 @@ public class HomeFuncionarioActivity extends AppCompatActivity {
                     long t1 = SystemClock.elapsedRealtime();
                     long latencyMs = (t1 - t0) / 2;
 
-                    if (result != null && result.getData() instanceof Map) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> data = (Map<String, Object>) result.getData();
-                        Object tsVal = data.get("timestampServerMs");
+                    if (result != null) {
+                        Object tsVal = result.get("timestampServerMs");
                         if (tsVal instanceof Number) {
                             long serverTs = ((Number) tsVal).longValue();
                             baseServerTimeMs = serverTs + latencyMs;

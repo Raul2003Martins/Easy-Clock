@@ -135,13 +135,8 @@ public class PerfilRhActivity extends AppCompatActivity {
                     }
 
                     String codigo = "";
-                    if (result != null && result.getData() instanceof Map) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> data = (Map<String, Object>) result.getData();
-                        Object val = data.get("codigoConvite");
-                        if (val != null) {
-                            codigo = val.toString();
-                        }
+                    if (result != null && result.get("codigoConvite") != null) {
+                        codigo = result.get("codigoConvite").toString();
                     }
 
                     exibirDialogoConviteGerado(codigo);

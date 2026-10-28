@@ -1,143 +1,155 @@
 rules_version = '2';
 
 // ===============================================================
-// Assumed Data Model
+// Assumed Data Model for Easy Clock (Firebase Spark Mode)
 // ===============================================================
 //
 // Collection: empresa/{empresaId}
-// Document ID: auto-generated string
-// Fields:
-//   - nome: string (required) - Company name
-//   - cnpj: string (required) - Clean CNPJ (14 digits)
-//   - endereco: string (required) - Address
-//   - latitude: number (required) - Default 0
-//   - longitude: number (required) - Default 0
-//   - raioPermitido: number (required) - Default 0
-//   - responsavelId: string (required) - Responsible user UID
-//   - status: string (required) - "ATIVA" or "INATIVA"
-//   - criadoEm: timestamp (required) - Server creation timestamp
-//
-// Collection: funcionarios/{uid}
-// Document ID: user UID (from Firebase Auth)
-// Fields:
-//   - uid: string (required) - User UID
-//   - empresaId: string (required) - Linked company document ID
-//   - nome: string (required) - Full name
-//   - email: string (required) - Email address
-//   - perfil: string (required) - "RH" or "FUNCIONARIO"
-//   - status: string (required) - "ATIVO", "PENDENTE_APROVACAO", or "INATIVO"
-//   - cargo: string (optional) - Job title
-//   - setorId: string (optional) - Department ID
-//   - matricula: string (optional) - Employee registration ID
-//   - dataAdmissao: timestamp (optional) - Admission date
-//   - faceId: string (optional) - FaceID reference
-//   - criadoEm: timestamp (required) - Server creation timestamp
-//
+// Collection: funcionario/{uid}
 // Collection: convitesEmpresa/{conviteId}
-// Document ID: auto-generated string
-// Fields: (Direct client access BLOCKED - Admin SDK only)
-//
+// Collection: convitesLookup/{codigoHash}
 // Collection: cnpjs/{cnpj}
-// Document ID: clean CNPJ
-// Fields: (Direct client access BLOCKED - Admin SDK only)
-//
+// Collection: auditoriaAprovacoes/{auditId}
 // Collection: rateLimits/{rateLimitId}
-// Document ID: sha256 hash
-// Fields: (Direct client access BLOCKED - Admin SDK only)
 //
 // ===============================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================================================
     // Helper Functions
-    // ===============================================================
-
-    // Check if request is from an authenticated user
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Check if the authenticated user's UID matches the given userId
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Fetch the authenticated user's document from /funcionarios/{uid}
     function getFuncionarioData() {
-      return get(/databases/$(database)/documents/funcionarios/$(request.auth.uid)).data;
+      return get(/databases/$(database)/documents/funcionario/$(request.auth.uid)).data;
     }
 
-    // Check if the user document exists in /funcionarios
     function hasFuncionarioDoc() {
       return isAuthenticated() &&
-        exists(/databases/$(database)/documents/funcionarios/$(request.auth.uid));
+        exists(/databases/$(database)/documents/funcionario/$(request.auth.uid));
     }
 
-    // Check if the authenticated user is active (status == "ATIVO")
     function isUsuarioAtivo() {
       return hasFuncionarioDoc() &&
         getFuncionarioData().status == "ATIVO";
     }
 
-    // Check if the authenticated user is an active RH (perfil == "RH" and status == "ATIVO")
     function isRhAtivo() {
       return isUsuarioAtivo() &&
         getFuncionarioData().perfil == "RH";
     }
 
-    // Check if the authenticated user belongs to the given company ID
     function pertenceAEmpresa(empresaId) {
       return isUsuarioAtivo() &&
         getFuncionarioData().empresaId == empresaId;
     }
 
-    // Default deny all collections by default
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // ===============================================================
-    // Collection: funcionarios
-    // ===============================================================
-    match /funcionarios/{uid} {
-      // 1. Every authenticated user can read their own employee document
-      // (even if status == "PENDENTE_APROVACAO" or "INATIVO") to identify status/perfil
+    // Collection: funcionario
+    match /funcionario/{uid} {
+      // 1. Get own profile (even when pending approval or inativo)
       allow get: if isOwner(uid);
 
-      // 2. Active RH can read/list employee documents belonging ONLY to their company
+      // 2. Active RH can list/get employee documents belonging ONLY to their company
       allow get, list: if isRhAtivo() &&
         resource.data.empresaId == getFuncionarioData().empresaId;
 
-      // Direct write operations (create, update, delete) are strictly forbidden
-      allow write: if false;
+      // 3. Create initial profile during registration:
+      // Case A: Creating RH account (must create matching new empresa in same batch where responsavelId == uid)
+      // Case B: Creating FUNCIONARIO account (status must be PENDENTE_APROVACAO and invite must exist in convitesLookup)
+      allow create: if isOwner(uid) &&
+        request.resource.data.uid == uid &&
+        (
+          (
+            request.resource.data.perfil == "RH" &&
+            request.resource.data.status == "ATIVO" &&
+            getAfter(/databases/$(database)/documents/empresa/$(request.resource.data.empresaId)).data.responsavelId == uid
+          ) ||
+          (
+            request.resource.data.perfil == "FUNCIONARIO" &&
+            request.resource.data.status == "PENDENTE_APROVACAO" &&
+            exists(/databases/$(database)/documents/convitesLookup/$(request.resource.data.codigoHash))
+          )
+        );
+
+      // 4. Update status: Active RH of the same company can change status from PENDENTE_APROVACAO to ATIVO or RECUSADO.
+      // ALL OTHER FIELDS MUST REMAIN UNCHANGED.
+      allow update: if isRhAtivo() &&
+        resource.data.empresaId == getFuncionarioData().empresaId &&
+        resource.data.status == "PENDENTE_APROVACAO" &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        request.resource.data.status in ['ATIVO', 'RECUSADO'];
     }
 
-    // ===============================================================
     // Collection: empresa
-    // ===============================================================
     match /empresa/{empresaId} {
-      // Active users (RH or FUNCIONARIO) can read ONLY their own company document
       allow get: if pertenceAEmpresa(empresaId);
 
-      // Direct listing and write operations are strictly forbidden
-      allow list: if false;
-      allow write: if false;
+      // Create company during registration
+      allow create: if isAuthenticated() &&
+        request.resource.data.responsavelId == request.auth.uid &&
+        request.resource.data.status == "ATIVA";
+
+      allow list, update, delete: if false;
     }
 
-    // ===============================================================
-    // Collections: convitesEmpresa, cnpjs, rateLimits
-    // Completely BLOCKED for direct client access (Cloud Functions / Admin SDK only)
-    // ===============================================================
-    match /convitesEmpresa/{conviteId} {
-      allow read, write: if false;
-    }
-
+    // Collection: cnpjs (CNPJ lock for uniqueness)
     match /cnpjs/{cnpj} {
-      allow read, write: if false;
+      allow get: if isAuthenticated();
+      allow create: if isAuthenticated() && !exists(/databases/$(database)/documents/cnpjs/$(cnpj));
+      allow list, update, delete: if false;
     }
 
+    // Collection: convitesLookup (Document ID = sha256 hash)
+    match /convitesLookup/{codigoHash} {
+      // Lookup by exact hash ID allowed for authenticated users during registration
+      allow get: if isAuthenticated();
+
+      allow create: if isAuthenticated() && (
+        (hasFuncionarioDoc() && isRhAtivo() && request.resource.data.empresaId == getFuncionarioData().empresaId) ||
+        getAfter(/databases/$(database)/documents/empresa/$(request.resource.data.empresaId)).data.responsavelId == request.auth.uid
+      );
+
+      allow update: if isAuthenticated();
+      allow list, delete: if false;
+    }
+
+    // Collection: convitesEmpresa
+    match /convitesEmpresa/{conviteId} {
+      allow get, list: if isRhAtivo() &&
+        resource.data.empresaId == getFuncionarioData().empresaId;
+
+      allow create: if isAuthenticated() && (
+        (hasFuncionarioDoc() && isRhAtivo() && request.resource.data.empresaId == getFuncionarioData().empresaId) ||
+        getAfter(/databases/$(database)/documents/empresa/$(request.resource.data.empresaId)).data.responsavelId == request.auth.uid
+      );
+
+      allow update, delete: if false;
+    }
+
+    // Collection: auditoriaAprovacoes
+    match /auditoriaAprovacoes/{auditId} {
+      allow create: if isRhAtivo() &&
+        request.resource.data.rhUid == request.auth.uid &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId;
+
+      allow get, list: if isRhAtivo() &&
+        resource.data.empresaId == getFuncionarioData().empresaId;
+
+      allow update, delete: if false;
+    }
+
+    // Collection: rateLimits
     match /rateLimits/{rateLimitId} {
       allow read, write: if false;
     }

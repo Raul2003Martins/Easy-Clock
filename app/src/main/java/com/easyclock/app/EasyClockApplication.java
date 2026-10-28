@@ -8,6 +8,9 @@ import com.google.firebase.functions.FirebaseFunctions;
 
 public class EasyClockApplication extends Application {
 
+    // Flag de ambiente: true para emuladores locais (10.0.2.2), false para Firebase Cloud (Plano Spark)
+    public static final boolean USE_FIREBASE_EMULATORS = false;
+
     private static final String EMULATOR_HOST = "10.0.2.2";
     private static final int AUTH_EMULATOR_PORT = 9099;
     private static final int FIRESTORE_EMULATOR_PORT = 8080;
@@ -18,7 +21,7 @@ public class EasyClockApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && USE_FIREBASE_EMULATORS) {
             configurarEmuladoresFirebase();
         }
     }

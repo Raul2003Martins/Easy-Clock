@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class FuncionarioDAO {
 
-    private static final String COLECAO = "funcionarios";
+    private static final String COLECAO = "funcionario";
 
     private final FirebaseFirestore db;
 
