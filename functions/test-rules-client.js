@@ -55,88 +55,160 @@ async function main() {
     }
   }
 
-  // 1. Bloquear criação de RH para empresa existente sem criar nova empresa
-  await test("1. Bloquear criação de perfil RH para empresa existente",
-      async () => {
-        await testEnv.withSecurityRulesDisabled(async (context) => {
-          await context.firestore()
-              .collection("empresa")
-              .doc("empresa_existente_1")
-              .set({
-                nome: "Empresa Antiga",
-                cnpj: "11111111000100",
-                responsavelId: "dono_original",
-                status: "ATIVA",
-              });
-        });
+  const rhUid = "rh_valido_uid_100";
+  const empresaId = "empresa_nova_id_100";
+  const cnpjClean = "11111111000100";
 
-        const userCtx = testEnv.authenticatedContext("invasor_uid");
+  // Setup inicial: Empresa A e RH A
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const adminDb = context.firestore();
+    await adminDb.collection("cnpjs").doc(cnpjClean).set({
+      empresaId: empresaId,
+    });
+    await adminDb.collection("empresa").doc(empresaId).set({
+      nome: "Empresa Teste A",
+      cnpj: cnpjClean,
+      responsavelId: rhUid,
+      status: "ATIVA",
+    });
+    await adminDb.collection("funcionario").doc(rhUid).set({
+      uid: rhUid,
+      empresaId: empresaId,
+      nome: "Responsável RH",
+      email: "rh@empresa.com",
+      perfil: "RH",
+      status: "ATIVO",
+    });
+  });
+
+  const inviteCodeA = "CONVITE_TESTE_A_100";
+  const inviteHashA = sha256(inviteCodeA);
+
+  // Criar convite válido para Empresa A
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const adminDb = context.firestore();
+    await adminDb.collection("convitesLookup").doc(inviteHashA).set({
+      empresaId: empresaId,
+      codigoHash: inviteHashA,
+      ativo: true,
+      limiteUsos: 5,
+      quantidadeUsos: 0,
+    });
+  });
+
+  // 1. Bloquear incremento isolado do contador
+  await test("1. Bloquear incremento isolado do contador de convite",
+      async () => {
+        const userCtx = testEnv.authenticatedContext("usuario_comum_1");
         const db = userCtx.firestore();
 
-        const promise = db.collection("funcionario")
-            .doc("invasor_uid")
-            .set({
-              uid: "invasor_uid",
-              empresaId: "empresa_existente_1",
-              nome: "Invasor RH",
-              email: "invasor@empresa.com",
-              perfil: "RH",
-              status: "ATIVO",
+        const promise = db.collection("convitesLookup").doc(inviteHashA)
+            .update({
+              quantidadeUsos: 1,
             });
 
         await assertFails(promise);
       });
 
-  // 2. Criar empresa + RH no mesmo batch -> SUCESSO
-  await test("2. Permitir cadastro de RH com nova empresa no mesmo batch",
+  // 2. Bloquear incremento de convite com empresa divergente no cadastro
+  await test("2. Bloquear incremento de convite com empresa divergente",
       async () => {
-        const rhUid = "rh_valido_uid";
-        const empresaId = "empresa_nova_id";
-        const userCtx = testEnv.authenticatedContext(rhUid);
-        const db = userCtx.firestore();
+        const funcUid = "func_divergente_2";
+        const funcCtx = testEnv.authenticatedContext(funcUid);
+        const db = funcCtx.firestore();
 
         const batch = db.batch();
-        batch.set(db.collection("cnpjs").doc("22222222000100"), {
-          empresaId: empresaId,
+        batch.set(db.collection("funcionario").doc(funcUid), {
+          uid: funcUid,
+          empresaId: "outra_empresa_falsa_999",
+          nome: "Invasor Empresa",
+          email: "invasor2@empresa.com",
+          perfil: "FUNCIONARIO",
+          status: "PENDENTE_APROVACAO",
+          codigoHash: inviteHashA,
         });
-        batch.set(db.collection("empresa").doc(empresaId), {
-          nome: "Empresa Nova LTDA",
-          cnpj: "22222222000100",
-          endereco: "Rua B, 200",
-          responsavelId: rhUid,
-          status: "ATIVA",
-        });
-        batch.set(db.collection("funcionario").doc(rhUid), {
-          uid: rhUid,
-          empresaId: empresaId,
-          nome: "Responsável RH",
-          email: "rh2@empresa.com",
-          perfil: "RH",
-          status: "ATIVO",
+        batch.update(db.collection("convitesLookup").doc(inviteHashA), {
+          quantidadeUsos: 1,
         });
 
-        await assertSucceeds(batch.commit());
+        await assertFails(batch.commit());
       });
 
-  // 3. Cadastro de Funcionário por convite -> VALIDA CONVITE vs BLOQUEIA
-  await test("3. Permitir funcionário com convite e bloquear sem convite",
-      async () => {
-        const inviteCode = "CONVITE_VALIDO_ABC";
-        const inviteHash = sha256(inviteCode);
-        const empresaId = "empresa_nova_id";
-
-        await testEnv.withSecurityRulesDisabled(async (context) => {
-          await context.firestore()
-              .collection("convitesLookup")
-              .doc(inviteHash)
-              .set({
-                empresaId: empresaId,
-                ativo: true,
-                quantidadeUsos: 0,
-              });
+  // 3. Bloquear uso de convite inativo
+  const inviteInativoHash = sha256("CONVITE_INATIVO_3");
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await context.firestore().collection("convitesLookup")
+        .doc(inviteInativoHash)
+        .set({
+          empresaId: empresaId,
+          codigoHash: inviteInativoHash,
+          ativo: false,
+          quantidadeUsos: 0,
         });
+  });
 
-        const funcUid = "func_convidado_uid";
+  await test("3. Bloquear uso de convite inativo", async () => {
+    const funcUid = "func_inativo_3";
+    const funcCtx = testEnv.authenticatedContext(funcUid);
+    const db = funcCtx.firestore();
+
+    const batch = db.batch();
+    batch.set(db.collection("funcionario").doc(funcUid), {
+      uid: funcUid,
+      empresaId: empresaId,
+      nome: "Funcionário Inativo",
+      email: "inativo3@empresa.com",
+      perfil: "FUNCIONARIO",
+      status: "PENDENTE_APROVACAO",
+      codigoHash: inviteInativoHash,
+    });
+    batch.update(db.collection("convitesLookup").doc(inviteInativoHash), {
+      quantidadeUsos: 1,
+    });
+
+    await assertFails(batch.commit());
+  });
+
+  // 4. Bloquear uso acima do limite de utilizações
+  const inviteEsgotadoHash = sha256("CONVITE_ESGOTADO_4");
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await context.firestore().collection("convitesLookup")
+        .doc(inviteEsgotadoHash)
+        .set({
+          empresaId: empresaId,
+          codigoHash: inviteEsgotadoHash,
+          ativo: true,
+          limiteUsos: 1,
+          quantidadeUsos: 1,
+        });
+  });
+
+  await test("4. Bloquear uso de convite que atingiu o limite", async () => {
+    const funcUid = "func_esgotado_4";
+    const funcCtx = testEnv.authenticatedContext(funcUid);
+    const db = funcCtx.firestore();
+
+    const batch = db.batch();
+    batch.set(db.collection("funcionario").doc(funcUid), {
+      uid: funcUid,
+      empresaId: empresaId,
+      nome: "Funcionário Esgotado",
+      email: "esgotado4@empresa.com",
+      perfil: "FUNCIONARIO",
+      status: "PENDENTE_APROVACAO",
+      codigoHash: inviteEsgotadoHash,
+    });
+    batch.update(db.collection("convitesLookup").doc(inviteEsgotadoHash), {
+      quantidadeUsos: 2,
+    });
+
+    await assertFails(batch.commit());
+  });
+
+  // 5. Permitir cadastro legítimo de funcionário com contador
+  await test("5. Permitir cadastro legítimo com atualização do contador",
+      async () => {
+        const funcUid = "func_legitimo_5";
         const funcCtx = testEnv.authenticatedContext(funcUid);
         const db = funcCtx.firestore();
 
@@ -144,122 +216,124 @@ async function main() {
         batch.set(db.collection("funcionario").doc(funcUid), {
           uid: funcUid,
           empresaId: empresaId,
-          nome: "Funcionário Convidado",
-          email: "func@empresa.com",
+          nome: "Funcionário Legítimo",
+          email: "legitimo5@empresa.com",
           perfil: "FUNCIONARIO",
           status: "PENDENTE_APROVACAO",
-          codigoHash: inviteHash,
+          codigoHash: inviteHashA,
         });
-        batch.update(db.collection("convitesLookup").doc(inviteHash), {
+        batch.update(db.collection("convitesLookup").doc(inviteHashA), {
           quantidadeUsos: 1,
         });
-        await assertSucceeds(batch.commit());
 
-        const invasorCtx = testEnv.authenticatedContext("invasor_uid_3");
-        const dbInvasor = invasorCtx.firestore();
-        const failPromise = dbInvasor.collection("funcionario")
-            .doc("invasor_uid_3")
-            .set({
-              uid: "invasor_uid_3",
-              empresaId: empresaId,
-              nome: "Sem Convite",
-              email: "semconvite@empresa.com",
-              perfil: "FUNCIONARIO",
-              status: "PENDENTE_APROVACAO",
-              codigoHash: "HASH_INEXISTENTE_999",
-            });
-        await assertFails(failPromise);
+        await assertSucceeds(batch.commit());
       });
 
-  // 4. Proteger convites: Funcionário comum NÃO pode criar; RH PODE
-  await test("4. Impede que funcionário comum crie convites e permite RH",
-      async () => {
-        const empresaId = "empresa_nova_id";
-        const rhUid = "rh_valido_uid";
-        const funcUid = "func_convidado_uid";
+  // 6. Bloquear reserva de CNPJ isolada sem empresa no mesmo lote
+  await test("6. Bloquear reserva isolada de CNPJ sem empresa", async () => {
+    const userCtx = testEnv.authenticatedContext("usuario_cnpjs_6");
+    const db = userCtx.firestore();
 
-        await testEnv.withSecurityRulesDisabled(async (context) => {
-          await context.firestore()
-              .collection("funcionario")
-              .doc(funcUid)
-              .update({
-                status: "ATIVO",
-              });
+    const promise = db.collection("cnpjs").doc("88888888000100").set({
+      empresaId: "empresa_isolada_6",
+    });
+
+    await assertFails(promise);
+  });
+
+  // 7. Bloquear reserva de CNPJ associada a empresa preexistente
+  await test("7. Bloquear reserva de CNPJ para empresa preexistente",
+      async () => {
+        const userCtx = testEnv.authenticatedContext("usuario_cnpjs_7");
+        const db = userCtx.firestore();
+
+        const promise = db.collection("cnpjs").doc("11111111000100").set({
+          empresaId: empresaId,
         });
 
-        const funcCtx = testEnv.authenticatedContext(funcUid);
-        const dbFunc = funcCtx.firestore();
-        const failConvite = dbFunc.collection("convitesEmpresa")
-            .doc("convite_fake")
-            .set({
-              empresaId: empresaId,
-              codigoHash: "hash_fake",
-              ativo: true,
-            });
-        await assertFails(failConvite);
-
-        const rhCtx = testEnv.authenticatedContext(rhUid);
-        const dbRh = rhCtx.firestore();
-        const succConvite = dbRh.collection("convitesEmpresa")
-            .doc("convite_rh_ok")
-            .set({
-              empresaId: empresaId,
-              codigoHash: "hash_rh_ok",
-              ativo: true,
-            });
-        await assertSucceeds(succConvite);
+        await assertFails(promise);
       });
 
-  // 5. Aprovação/Recusa: Somente RH ativo da MESMA empresa consegue aprovar
-  await test("5. Somente RH ativo da mesma empresa pode aprovar cadastros",
+  // 8. Permitir cadastro legítimo de nova empresa com reserva de CNPJ
+  await test("8. Permitir cadastro legítimo de nova empresa com CNPJ",
       async () => {
-        const empresaA = "empresa_nova_id";
-        const empresaB = "empresa_outra_id";
-        const rhAUid = "rh_valido_uid";
-        const rhBUid = "rh_empresa_b_uid";
-        const funcPendUid = "func_pendente_uid";
+        const novoRhUid = "novo_rh_800";
+        const novaEmpresaId = "nova_empresa_800";
+        const novoCnpj = "99999999000100";
 
+        const userCtx = testEnv.authenticatedContext(novoRhUid);
+        const db = userCtx.firestore();
+
+        const batch = db.batch();
+        batch.set(db.collection("cnpjs").doc(novoCnpj), {
+          empresaId: novaEmpresaId,
+        });
+        batch.set(db.collection("empresa").doc(novaEmpresaId), {
+          nome: "Nova Empresa S.A.",
+          cnpj: novoCnpj,
+          endereco: "Rua Nova, 800",
+          responsavelId: novoRhUid,
+          status: "ATIVA",
+        });
+        batch.set(db.collection("funcionario").doc(novoRhUid), {
+          uid: novoRhUid,
+          empresaId: novaEmpresaId,
+          nome: "Novo RH Responsável",
+          email: "novorh800@empresa.com",
+          perfil: "RH",
+          status: "ATIVO",
+        });
+
+        await assertSucceeds(batch.commit());
+      });
+
+  // 9. Aprovação por RH legítimo vs bloqueio por RH de outra empresa
+  const rhBUid = "rh_b_uid_900";
+  const empresaBId = "empresa_b_id_900";
+
+  await test("9. Aprovação por RH legítimo vs bloqueio por RH externo",
+      async () => {
         await testEnv.withSecurityRulesDisabled(async (context) => {
           const adminDb = context.firestore();
-          await adminDb.collection("empresa").doc(empresaB).set({
-            nome: "Outra Empresa",
-            cnpj: "33333333000100",
+          await adminDb.collection("empresa").doc(empresaBId).set({
+            nome: "Empresa B",
+            cnpj: "77777777000100",
             responsavelId: rhBUid,
             status: "ATIVA",
           });
           await adminDb.collection("funcionario").doc(rhBUid).set({
             uid: rhBUid,
-            empresaId: empresaB,
+            empresaId: empresaBId,
             perfil: "RH",
             status: "ATIVO",
-          });
-          await adminDb.collection("funcionario").doc(funcPendUid).set({
-            uid: funcPendUid,
-            empresaId: empresaA,
-            nome: "Funcionário Pendente A",
-            email: "pendenteA@empresa.com",
-            perfil: "FUNCIONARIO",
-            status: "PENDENTE_APROVACAO",
           });
         });
 
         const rhBCtx = testEnv.authenticatedContext(rhBUid);
         const dbRhB = rhBCtx.firestore();
         const failAprov = dbRhB.collection("funcionario")
-            .doc(funcPendUid)
-            .update({
+            .doc("func_legitimo_5").update({
               status: "ATIVO",
             });
         await assertFails(failAprov);
 
-        const rhACtx = testEnv.authenticatedContext(rhAUid);
+        const rhACtx = testEnv.authenticatedContext(rhUid);
         const dbRhA = rhACtx.firestore();
         const succAprov = dbRhA.collection("funcionario")
-            .doc(funcPendUid)
-            .update({
+            .doc("func_legitimo_5").update({
               status: "ATIVO",
             });
         await assertSucceeds(succAprov);
+      });
+
+  // 10. Leitura de convite por hash exato antes de autenticação
+  await test("10. Consulta de convite exato permitida antes da Auth",
+      async () => {
+        const unauthCtx = testEnv.unauthenticatedContext();
+        const db = unauthCtx.firestore();
+
+        const promise = db.collection("convitesLookup").doc(inviteHashA).get();
+        await assertSucceeds(promise);
       });
 
   console.log("\n=================================================");

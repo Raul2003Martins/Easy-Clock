@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="gcm_defaultSenderId" translatable="false">426869746573</string>
-    <string name="google_api_key" translatable="false">AIzaSyArC_rICU_egLf9ckmcEXDQKbgdy0zebsI</string>
-    <string name="google_app_id" translatable="false">1:426869746573:android:7e7604c458db9277ccabc4</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyArC_rICU_egLf9ckmcEXDQKbgdy0zebsI</string>
-    <string name="google_storage_bucket" translatable="false">easyclock-f2e8f.firebasestorage.app</string>
-    <string name="project_id" translatable="false">easyclock-f2e8f</string>
-</resources>
