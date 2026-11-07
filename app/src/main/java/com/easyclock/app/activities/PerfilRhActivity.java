@@ -29,6 +29,8 @@ public class PerfilRhActivity extends AppCompatActivity {
     private MaterialButton btnVisualizarHoleritesRh;
     private MaterialButton btnVerTodosColaboradores;
     private MaterialButton btnGerarConviteRh;
+    private MaterialButton btnGerenciarJornadas;
+    private MaterialButton btnConsultarPontosRh;
 
     private AutenticacaoService autenticacaoService;
     private FuncionarioDAO funcionarioDAO;
@@ -58,6 +60,8 @@ public class PerfilRhActivity extends AppCompatActivity {
         btnVisualizarHoleritesRh = findViewById(R.id.btnVisualizarHoleritesRh);
         btnVerTodosColaboradores = findViewById(R.id.btnVerTodosColaboradores);
         btnGerarConviteRh = findViewById(R.id.btnGerarConviteRh);
+        btnGerenciarJornadas = findViewById(R.id.btnGerenciarJornadas);
+        btnConsultarPontosRh = findViewById(R.id.btnConsultarPontosRh);
 
         MaterialButton btnLogoutRh = findViewById(R.id.btnLogoutRh);
         if (btnLogoutRh != null) {
@@ -98,6 +102,20 @@ public class PerfilRhActivity extends AppCompatActivity {
 
         if (btnGerarConviteRh != null) {
             btnGerarConviteRh.setOnClickListener(v -> solicitarGeracaoConvite());
+        }
+
+        if (btnGerenciarJornadas != null) {
+            btnGerenciarJornadas.setOnClickListener(v -> {
+                Intent intent = new Intent(PerfilRhActivity.this, JornadaTrabalhoActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        if (btnConsultarPontosRh != null) {
+            btnConsultarPontosRh.setOnClickListener(v -> {
+                Intent intent = new Intent(PerfilRhActivity.this, ConsultaPontosRhActivity.class);
+                startActivity(intent);
+            });
         }
     }
 

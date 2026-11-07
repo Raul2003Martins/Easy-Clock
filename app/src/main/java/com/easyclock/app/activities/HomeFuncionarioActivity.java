@@ -64,7 +64,7 @@ public class HomeFuncionarioActivity extends AppCompatActivity {
         MaterialButton btnBaterPonto = findViewById(R.id.btnBaterPonto);
         if (btnBaterPonto != null) {
             btnBaterPonto.setOnClickListener(v ->
-                    startActivity(new Intent(HomeFuncionarioActivity.this, FaceIdActivity.class))
+                    startActivity(new Intent(HomeFuncionarioActivity.this, RegistroPontoActivity.class))
             );
         }
     }

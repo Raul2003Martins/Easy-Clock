@@ -9,6 +9,9 @@ rules_version = '2';
 // Collection: convitesEmpresa/{conviteId}
 // Collection: convitesLookup/{codigoHash}
 // Collection: cnpjs/{cnpj}
+// Collection: jornadasTrabalho/{jornadaId}
+// Collection: expedientes/{expedienteId} ({uid}_{dataReferencia})
+// Collection: ponto/{pontoId} ({uid}_{dataReferencia}_{tipoPonto})
 // Collection: auditoriaAprovacoes/{auditId}
 // Collection: rateLimits/{rateLimitId}
 //
@@ -50,6 +53,14 @@ service cloud.firestore {
         getFuncionarioData().empresaId == empresaId;
     }
 
+    function pontoExiste(uid, dataRef, tipo) {
+      return exists(/databases/$(database)/documents/ponto/$(uid + '_' + dataRef + '_' + tipo));
+    }
+
+    function expedienteExiste(uid, dataRef) {
+      return exists(/databases/$(database)/documents/expedientes/$(uid + '_' + dataRef));
+    }
+
     // Default deny
     match /{document=**} {
       allow read, write: if false;
@@ -65,8 +76,6 @@ service cloud.firestore {
         resource.data.empresaId == getFuncionarioData().empresaId;
 
       // 3. Create initial profile during registration:
-      // Case A: Creating RH account (must create matching new empresa in same batch where responsavelId == uid)
-      // Case B: Creating FUNCIONARIO account (status must be PENDENTE_APROVACAO and invite must exist in convitesLookup and be active)
       allow create: if isOwner(uid) &&
         request.resource.data.uid == uid &&
         (
@@ -83,20 +92,153 @@ service cloud.firestore {
           )
         );
 
-      // 4. Update status: Active RH of the same company can change status from PENDENTE_APROVACAO to ATIVO or RECUSADO.
+      // 4. Update: Active RH of the same company can change status OR jornadaId
       allow update: if isRhAtivo() &&
         'empresaId' in resource.data &&
         resource.data.empresaId == getFuncionarioData().empresaId &&
-        resource.data.status == "PENDENTE_APROVACAO" &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
-        request.resource.data.status in ['ATIVO', 'RECUSADO'];
+        (
+          (
+            resource.data.status == "PENDENTE_APROVACAO" &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+            request.resource.data.status in ['ATIVO', 'RECUSADO']
+          ) ||
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['jornadaId']) &&
+            (
+              request.resource.data.jornadaId == "" ||
+              request.resource.data.jornadaId == null ||
+              (
+                exists(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)) &&
+                get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.empresaId == resource.data.empresaId &&
+                get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.ativo == true
+              )
+            )
+          )
+        );
+    }
+
+    // Collection: expedientes ({uid}_{dataReferencia})
+    match /expedientes/{expedienteId} {
+      allow get: if isOwner(resource.data.funcionarioId) ||
+        (isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId);
+
+      // Creation on ENTRADA
+      allow create: if isUsuarioAtivo() &&
+        request.resource.data.funcionarioId == request.auth.uid &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.dataReferencia.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        expedienteId == request.auth.uid + "_" + request.resource.data.dataReferencia &&
+        !expedienteExiste(request.auth.uid, request.resource.data.dataReferencia) &&
+        request.resource.data.jornadaId == getFuncionarioData().jornadaId &&
+        exists(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)) &&
+        get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.empresaId == getFuncionarioData().empresaId &&
+        get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.ativo == true &&
+        request.resource.data.jornadaSnapshot.entrada == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.entrada &&
+        request.resource.data.jornadaSnapshot.saidaAlmoco == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.saidaAlmoco &&
+        request.resource.data.jornadaSnapshot.retornoAlmoco == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.retornoAlmoco &&
+        request.resource.data.jornadaSnapshot.saida == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.saida &&
+        request.resource.data.jornadaSnapshot.cargaHorariaMinutos == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.cargaHorariaMinutos &&
+        request.resource.data.proximaMarcacao == "SAIDA_ALMOCO" &&
+        request.resource.data.concluido == false;
+
+      // Update on subsequent punches
+      allow update: if isUsuarioAtivo() &&
+        resource.data.funcionarioId == request.auth.uid &&
+        resource.data.concluido == false &&
+        request.resource.data.funcionarioId == request.auth.uid &&
+        request.resource.data.empresaId == resource.data.empresaId &&
+        request.resource.data.jornadaId == resource.data.jornadaId &&
+        request.resource.data.dataReferencia == resource.data.dataReferencia &&
+        request.resource.data.jornadaSnapshot == resource.data.jornadaSnapshot &&
+        (
+          (
+            resource.data.proximaMarcacao == "SAIDA_ALMOCO" &&
+            request.resource.data.proximaMarcacao == "RETORNO_ALMOCO" &&
+            request.resource.data.concluido == false
+          ) ||
+          (
+            resource.data.proximaMarcacao == "RETORNO_ALMOCO" &&
+            request.resource.data.proximaMarcacao == "SAIDA" &&
+            request.resource.data.concluido == false
+          ) ||
+          (
+            resource.data.proximaMarcacao == "SAIDA" &&
+            request.resource.data.proximaMarcacao == "CONCLUIDO" &&
+            request.resource.data.concluido == true
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    // Collection: ponto ({uid}_{dataReferencia}_{tipoPonto})
+    match /ponto/{pontoId} {
+      allow get, list: if isOwner(resource.data.funcionarioId) ||
+        (isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId);
+
+      allow create: if isUsuarioAtivo() &&
+        request.resource.data.funcionarioId == request.auth.uid &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.dataHora == request.time &&
+        request.resource.data.dataReferencia.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        request.resource.data.tipoPonto in ['ENTRADA', 'SAIDA_ALMOCO', 'RETORNO_ALMOCO', 'SAIDA'] &&
+        request.resource.data.status == "VALIDO" &&
+        pontoId == request.auth.uid + "_" + request.resource.data.dataReferencia + "_" + request.resource.data.tipoPonto &&
+        (
+          (
+            request.resource.data.tipoPonto == "ENTRADA" &&
+            !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "ENTRADA") &&
+            getAfter(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+          ) ||
+          (
+            request.resource.data.tipoPonto == "SAIDA_ALMOCO" &&
+            pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "ENTRADA") &&
+            !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "SAIDA_ALMOCO") &&
+            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+          ) ||
+          (
+            request.resource.data.tipoPonto == "RETORNO_ALMOCO" &&
+            pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "SAIDA_ALMOCO") &&
+            !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "RETORNO_ALMOCO") &&
+            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+          ) ||
+          (
+            request.resource.data.tipoPonto == "SAIDA" &&
+            pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "RETORNO_ALMOCO") &&
+            !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "SAIDA") &&
+            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+          )
+        );
+
+      allow update, delete: if false;
+    }
+
+    // Collection: jornadasTrabalho
+    match /jornadasTrabalho/{jornadaId} {
+      allow get, list: if pertenceAEmpresa(resource.data.empresaId);
+
+      allow create: if isRhAtivo() &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.nome is string &&
+        request.resource.data.nome.size() > 0 &&
+        request.resource.data.cargaHorariaMinutos is number &&
+        request.resource.data.cargaHorariaMinutos > 0 &&
+        request.resource.data.toleranciaMinutos is number &&
+        request.resource.data.toleranciaMinutos >= 0 &&
+        request.resource.data.diasSemana is list &&
+        request.resource.data.diasSemana.size() > 0;
+
+      allow update: if isRhAtivo() &&
+        resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.empresaId == resource.data.empresaId;
+
+      allow delete: if false;
     }
 
     // Collection: empresa
     match /empresa/{empresaId} {
       allow get: if pertenceAEmpresa(empresaId);
 
-      // Create company during registration
       allow create: if isAuthenticated() &&
         request.resource.data.responsavelId == request.auth.uid &&
         request.resource.data.status == "ATIVA";
@@ -104,7 +246,7 @@ service cloud.firestore {
       allow list, update, delete: if false;
     }
 
-    // Collection: cnpjs (CNPJ lock linked strictly to a NEW company created in the same batch by the authenticated user)
+    // Collection: cnpjs
     match /cnpjs/{cnpj} {
       allow get: if isAuthenticated();
 
@@ -119,18 +261,13 @@ service cloud.firestore {
 
     // Collection: convitesLookup (Document ID = sha256 hash)
     match /convitesLookup/{codigoHash} {
-      // Lookup by exact hash ID allowed during registration before/after auth
       allow get: if true;
 
-      // Creation by active RH or initial company setup
       allow create: if isAuthenticated() && (
         (hasFuncionarioDoc() && isRhAtivo() && request.resource.data.empresaId == getFuncionarioData().empresaId) ||
         getAfter(/databases/$(database)/documents/empresa/$(request.resource.data.empresaId)).data.responsavelId == request.auth.uid
       );
 
-      // Update allowed ONLY:
-      // 1. By active RH of same company
-      // 2. Or during legitimate employee signup in the SAME atomic batch
       allow update: if (
         (hasFuncionarioDoc() && isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId) ||
         (

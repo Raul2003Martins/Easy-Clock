@@ -34,6 +34,9 @@
         <activity android:name=".activities.HoleriteActivity" />
         <activity android:name=".activities.FolgaFeriasActivity" />
 
+        <activity android:name=".activities.RegistroPontoActivity" />
+        <activity android:name=".activities.HistoricoPontoActivity" />
+
         <!-- RH Activities -->
         <activity android:name=".activities.PerfilRhActivity" />
         <activity android:name=".activities.ColaboradoresActivity" />
@@ -43,6 +46,10 @@
         <activity android:name=".activities.SolicitacoesFuncionarioActivity" />
         <activity android:name=".activities.SolicitacaoFolgaDetalheActivity" />
         <activity android:name=".activities.SolicitacaoAjusteDetalheActivity" />
+        <activity android:name=".activities.JornadaTrabalhoActivity" />
+        <activity android:name=".activities.CadastroJornadaActivity" />
+        <activity android:name=".activities.VincularJornadaActivity" />
+        <activity android:name=".activities.ConsultaPontosRhActivity" />
     </application>
 
 </manifest>

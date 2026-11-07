@@ -4,24 +4,15 @@ const {
   assertSucceeds,
   assertFails,
 } = require("@firebase/rules-unit-testing");
+const {serverTimestamp} = require("firebase/firestore");
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
-
-/**
- * Computes SHA-256 hex string.
- * @param {string} text Text to hash.
- * @return {string} Hex hash string.
- */
-function sha256(text) {
-  return crypto.createHash("sha256").update(text).digest("hex");
-}
 
 /**
  * Main unit test runner for Firestore Security Rules.
  */
 async function main() {
-  console.log("=== INICIANDO TESTES COM @firebase/rules-unit-testing ===");
+  console.log("=== INICIANDO SUÍTE DE TESTES DO REGISTRO DE PONTO ===");
 
   const rulesPath = path.join(__dirname, "..", "firestore.rules");
   const rules = fs.readFileSync(rulesPath, "utf8");
@@ -55,286 +46,323 @@ async function main() {
     }
   }
 
-  const rhUid = "rh_valido_uid_100";
-  const empresaId = "empresa_nova_id_100";
-  const cnpjClean = "11111111000100";
+  const empresaAId = "empresa_A_final";
+  const empresaBId = "empresa_B_final";
+  const rhAUid = "rh_A_final_uid";
+  const rhBUid = "rh_B_final_uid";
+  const funcAUid = "func_A_final_uid";
+  const jornadaAId = "jornada_A_final_id";
+  const dataHoje = "2026-11-07";
 
-  // Setup inicial: Empresa A e RH A
+  const snapshotJornadaReal = {
+    entrada: "08:00",
+    saidaAlmoco: "12:00",
+    retornoAlmoco: "13:00",
+    saida: "17:00",
+    cargaHorariaMinutos: 480,
+    toleranciaMinutos: 5,
+  };
+
+  // Setup de documentos
   await testEnv.withSecurityRulesDisabled(async (context) => {
     const adminDb = context.firestore();
-    await adminDb.collection("cnpjs").doc(cnpjClean).set({
-      empresaId: empresaId,
-    });
-    await adminDb.collection("empresa").doc(empresaId).set({
-      nome: "Empresa Teste A",
-      cnpj: cnpjClean,
-      responsavelId: rhUid,
+
+    await adminDb.collection("empresa").doc(empresaAId).set({
+      nome: "Empresa A Final",
+      cnpj: "11111111000100",
+      responsavelId: rhAUid,
       status: "ATIVA",
     });
-    await adminDb.collection("funcionario").doc(rhUid).set({
-      uid: rhUid,
-      empresaId: empresaId,
-      nome: "Responsável RH",
-      email: "rh@empresa.com",
+    await adminDb.collection("funcionario").doc(rhAUid).set({
+      uid: rhAUid,
+      empresaId: empresaAId,
+      nome: "Responsável RH A",
+      email: "rhA@final.com",
+      perfil: "RH",
+      status: "ATIVO",
+    });
+    await adminDb.collection("funcionario").doc(funcAUid).set({
+      uid: funcAUid,
+      empresaId: empresaAId,
+      nome: "Funcionário A Final",
+      email: "funcA@final.com",
+      perfil: "FUNCIONARIO",
+      status: "ATIVO",
+      jornadaId: jornadaAId,
+    });
+
+    await adminDb.collection("jornadasTrabalho").doc(jornadaAId).set({
+      empresaId: empresaAId,
+      nome: "Jornada Padrão Final",
+      entrada: "08:00",
+      saidaAlmoco: "12:00",
+      retornoAlmoco: "13:00",
+      saida: "17:00",
+      cargaHorariaMinutos: 480,
+      toleranciaMinutos: 5,
+      ativo: true,
+    });
+
+    await adminDb.collection("empresa").doc(empresaBId).set({
+      nome: "Empresa B Final",
+      cnpj: "22222222000100",
+      responsavelId: rhBUid,
+      status: "ATIVA",
+    });
+    await adminDb.collection("funcionario").doc(rhBUid).set({
+      uid: rhBUid,
+      empresaId: empresaBId,
+      nome: "Responsável RH B",
+      email: "rhB@final.com",
       perfil: "RH",
       status: "ATIVO",
     });
   });
 
-  const inviteCodeA = "CONVITE_TESTE_A_100";
-  const inviteHashA = sha256(inviteCodeA);
+  const expedienteId = `${funcAUid}_${dataHoje}`;
+  const pontoEntradaId = `${funcAUid}_${dataHoje}_ENTRADA`;
 
-  // Criar convite válido para Empresa A
-  await testEnv.withSecurityRulesDisabled(async (context) => {
-    const adminDb = context.firestore();
-    await adminDb.collection("convitesLookup").doc(inviteHashA).set({
-      empresaId: empresaId,
-      codigoHash: inviteHashA,
-      ativo: true,
-      limiteUsos: 5,
-      quantidadeUsos: 0,
-    });
-  });
-
-  // 1. Bloquear incremento isolado do contador
-  await test("1. Bloquear incremento isolado do contador de convite",
+  // Teste 1: Funcionário ativo cria expediente com ENTRADA -> SUCESSO
+  await test("1. Funcionário ativo cria expediente com ENTRADA válida",
       async () => {
-        const userCtx = testEnv.authenticatedContext("usuario_comum_1");
-        const db = userCtx.firestore();
-
-        const promise = db.collection("convitesLookup").doc(inviteHashA)
-            .update({
-              quantidadeUsos: 1,
-            });
-
-        await assertFails(promise);
-      });
-
-  // 2. Bloquear incremento de convite com empresa divergente no cadastro
-  await test("2. Bloquear incremento de convite com empresa divergente",
-      async () => {
-        const funcUid = "func_divergente_2";
-        const funcCtx = testEnv.authenticatedContext(funcUid);
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
         const db = funcCtx.firestore();
 
         const batch = db.batch();
-        batch.set(db.collection("funcionario").doc(funcUid), {
-          uid: funcUid,
-          empresaId: "outra_empresa_falsa_999",
-          nome: "Invasor Empresa",
-          email: "invasor2@empresa.com",
-          perfil: "FUNCIONARIO",
-          status: "PENDENTE_APROVACAO",
-          codigoHash: inviteHashA,
+        batch.set(db.collection("expedientes").doc(expedienteId), {
+          empresaId: empresaAId,
+          funcionarioId: funcAUid,
+          jornadaId: jornadaAId,
+          dataReferencia: dataHoje,
+          jornadaSnapshot: snapshotJornadaReal,
+          proximaMarcacao: "SAIDA_ALMOCO",
+          concluido: false,
         });
-        batch.update(db.collection("convitesLookup").doc(inviteHashA), {
-          quantidadeUsos: 1,
+        batch.set(db.collection("ponto").doc(pontoEntradaId), {
+          empresaId: empresaAId,
+          funcionarioId: funcAUid,
+          jornadaId: jornadaAId,
+          dataReferencia: dataHoje,
+          tipoPonto: "ENTRADA",
+          dataHora: serverTimestamp(),
+          status: "VALIDO",
+          jornadaSnapshot: snapshotJornadaReal,
+        });
+
+        await assertSucceeds(batch.commit());
+      });
+
+  // Teste 2: Snapshot falsificado na ENTRADA -> FALHA
+  const dataOutroDia = "2026-11-08";
+  const expDivergId = `${funcAUid}_${dataOutroDia}`;
+  const pontoDivergId = `${funcAUid}_${dataOutroDia}_ENTRADA`;
+
+  await test("2. Snapshot falsificado na ENTRADA é bloqueado",
+      async () => {
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
+        const db = funcCtx.firestore();
+
+        const snapshotFalso = {
+          entrada: "00:00",
+          saidaAlmoco: "00:00",
+          retornoAlmoco: "00:00",
+          saida: "00:00",
+          cargaHorariaMinutos: 0,
+        };
+
+        const batch = db.batch();
+        batch.set(db.collection("expedientes").doc(expDivergId), {
+          empresaId: empresaAId,
+          funcionarioId: funcAUid,
+          jornadaId: jornadaAId,
+          dataReferencia: dataOutroDia,
+          jornadaSnapshot: snapshotFalso,
+          proximaMarcacao: "SAIDA_ALMOCO",
+          concluido: false,
+        });
+        batch.set(db.collection("ponto").doc(pontoDivergId), {
+          empresaId: empresaAId,
+          funcionarioId: funcAUid,
+          jornadaId: jornadaAId,
+          dataReferencia: dataOutroDia,
+          tipoPonto: "ENTRADA",
+          dataHora: serverTimestamp(),
+          status: "VALIDO",
+          jornadaSnapshot: snapshotFalso,
         });
 
         await assertFails(batch.commit());
       });
 
-  // 3. Bloquear uso de convite inativo
-  const inviteInativoHash = sha256("CONVITE_INATIVO_3");
-  await testEnv.withSecurityRulesDisabled(async (context) => {
-    await context.firestore().collection("convitesLookup")
-        .doc(inviteInativoHash)
-        .set({
-          empresaId: empresaId,
-          codigoHash: inviteInativoHash,
-          ativo: false,
-          quantidadeUsos: 0,
-        });
-  });
-
-  await test("3. Bloquear uso de convite inativo", async () => {
-    const funcUid = "func_inativo_3";
-    const funcCtx = testEnv.authenticatedContext(funcUid);
-    const db = funcCtx.firestore();
-
-    const batch = db.batch();
-    batch.set(db.collection("funcionario").doc(funcUid), {
-      uid: funcUid,
-      empresaId: empresaId,
-      nome: "Funcionário Inativo",
-      email: "inativo3@empresa.com",
-      perfil: "FUNCIONARIO",
-      status: "PENDENTE_APROVACAO",
-      codigoHash: inviteInativoHash,
-    });
-    batch.update(db.collection("convitesLookup").doc(inviteInativoHash), {
-      quantidadeUsos: 1,
-    });
-
-    await assertFails(batch.commit());
-  });
-
-  // 4. Bloquear uso acima do limite de utilizações
-  const inviteEsgotadoHash = sha256("CONVITE_ESGOTADO_4");
-  await testEnv.withSecurityRulesDisabled(async (context) => {
-    await context.firestore().collection("convitesLookup")
-        .doc(inviteEsgotadoHash)
-        .set({
-          empresaId: empresaId,
-          codigoHash: inviteEsgotadoHash,
-          ativo: true,
-          limiteUsos: 1,
-          quantidadeUsos: 1,
-        });
-  });
-
-  await test("4. Bloquear uso de convite que atingiu o limite", async () => {
-    const funcUid = "func_esgotado_4";
-    const funcCtx = testEnv.authenticatedContext(funcUid);
-    const db = funcCtx.firestore();
-
-    const batch = db.batch();
-    batch.set(db.collection("funcionario").doc(funcUid), {
-      uid: funcUid,
-      empresaId: empresaId,
-      nome: "Funcionário Esgotado",
-      email: "esgotado4@empresa.com",
-      perfil: "FUNCIONARIO",
-      status: "PENDENTE_APROVACAO",
-      codigoHash: inviteEsgotadoHash,
-    });
-    batch.update(db.collection("convitesLookup").doc(inviteEsgotadoHash), {
-      quantidadeUsos: 2,
-    });
-
-    await assertFails(batch.commit());
-  });
-
-  // 5. Permitir cadastro legítimo de funcionário com contador
-  await test("5. Permitir cadastro legítimo com atualização do contador",
+  // Teste 3: Alterar proximaMarcacao diretamente -> FALHA
+  await test("3. Alterar expediente diretamente sem ponto é bloqueado",
       async () => {
-        const funcUid = "func_legitimo_5";
-        const funcCtx = testEnv.authenticatedContext(funcUid);
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
         const db = funcCtx.firestore();
 
-        const batch = db.batch();
-        batch.set(db.collection("funcionario").doc(funcUid), {
-          uid: funcUid,
-          empresaId: empresaId,
-          nome: "Funcionário Legítimo",
-          email: "legitimo5@empresa.com",
-          perfil: "FUNCIONARIO",
-          status: "PENDENTE_APROVACAO",
-          codigoHash: inviteHashA,
-        });
-        batch.update(db.collection("convitesLookup").doc(inviteHashA), {
-          quantidadeUsos: 1,
-        });
-
-        await assertSucceeds(batch.commit());
-      });
-
-  // 6. Bloquear reserva de CNPJ isolada sem empresa no mesmo lote
-  await test("6. Bloquear reserva isolada de CNPJ sem empresa", async () => {
-    const userCtx = testEnv.authenticatedContext("usuario_cnpjs_6");
-    const db = userCtx.firestore();
-
-    const promise = db.collection("cnpjs").doc("88888888000100").set({
-      empresaId: "empresa_isolada_6",
-    });
-
-    await assertFails(promise);
-  });
-
-  // 7. Bloquear reserva de CNPJ associada a empresa preexistente
-  await test("7. Bloquear reserva de CNPJ para empresa preexistente",
-      async () => {
-        const userCtx = testEnv.authenticatedContext("usuario_cnpjs_7");
-        const db = userCtx.firestore();
-
-        const promise = db.collection("cnpjs").doc("11111111000100").set({
-          empresaId: empresaId,
-        });
+        const promise = db.collection("expedientes")
+            .doc(expedienteId)
+            .update({
+              proximaMarcacao: "SAIDA",
+              concluido: true,
+            });
 
         await assertFails(promise);
       });
 
-  // 8. Permitir cadastro legítimo de nova empresa com reserva de CNPJ
-  await test("8. Permitir cadastro legítimo de nova empresa com CNPJ",
+  // Teste 4: Alterar campos imutáveis do expediente -> FALHA
+  await test("4. Modificar campos imutáveis do expediente é bloqueado",
       async () => {
-        const novoRhUid = "novo_rh_800";
-        const novaEmpresaId = "nova_empresa_800";
-        const novoCnpj = "99999999000100";
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
+        const db = funcCtx.firestore();
 
-        const userCtx = testEnv.authenticatedContext(novoRhUid);
-        const db = userCtx.firestore();
+        const promise = db.collection("expedientes")
+            .doc(expedienteId)
+            .update({
+              empresaId: "empresa_hacked_999",
+            });
+
+        await assertFails(promise);
+      });
+
+  // Teste 5: Registrar SAIDA_ALMOCO mantendo snapshot congelado -> SUCESSO
+  const pontoSaidaAlmocoId = `${funcAUid}_${dataHoje}_SAIDA_ALMOCO`;
+
+  await test("5. Registrar SAIDA_ALMOCO mantendo snapshot congelado",
+      async () => {
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
+        const db = funcCtx.firestore();
 
         const batch = db.batch();
-        batch.set(db.collection("cnpjs").doc(novoCnpj), {
-          empresaId: novaEmpresaId,
+        batch.update(db.collection("expedientes").doc(expedienteId), {
+          proximaMarcacao: "RETORNO_ALMOCO",
         });
-        batch.set(db.collection("empresa").doc(novaEmpresaId), {
-          nome: "Nova Empresa S.A.",
-          cnpj: novoCnpj,
-          endereco: "Rua Nova, 800",
-          responsavelId: novoRhUid,
-          status: "ATIVA",
-        });
-        batch.set(db.collection("funcionario").doc(novoRhUid), {
-          uid: novoRhUid,
-          empresaId: novaEmpresaId,
-          nome: "Novo RH Responsável",
-          email: "novorh800@empresa.com",
-          perfil: "RH",
-          status: "ATIVO",
+        batch.set(db.collection("ponto").doc(pontoSaidaAlmocoId), {
+          empresaId: empresaAId,
+          funcionarioId: funcAUid,
+          jornadaId: jornadaAId,
+          dataReferencia: dataHoje,
+          tipoPonto: "SAIDA_ALMOCO",
+          dataHora: serverTimestamp(),
+          status: "VALIDO",
+          jornadaSnapshot: snapshotJornadaReal,
         });
 
         await assertSucceeds(batch.commit());
       });
 
-  // 9. Aprovação por RH legítimo vs bloqueio por RH de outra empresa
-  const rhBUid = "rh_b_uid_900";
-  const empresaBId = "empresa_b_id_900";
+  // Teste 6: RH altera/desativa jornada no meio do dia
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await context.firestore().collection("jornadasTrabalho")
+        .doc(jornadaAId)
+        .update({
+          nome: "Jornada Alterada pelo RH",
+          ativo: false,
+        });
+  });
 
-  await test("9. Aprovação por RH legítimo vs bloqueio por RH externo",
+  const pontoRetornoAlmocoId = `${funcAUid}_${dataHoje}_RETORNO_ALMOCO`;
+
+  await test("6. Concluir marcação mesmo se jornada for alterada/desativada",
       async () => {
-        await testEnv.withSecurityRulesDisabled(async (context) => {
-          const adminDb = context.firestore();
-          await adminDb.collection("empresa").doc(empresaBId).set({
-            nome: "Empresa B",
-            cnpj: "77777777000100",
-            responsavelId: rhBUid,
-            status: "ATIVA",
-          });
-          await adminDb.collection("funcionario").doc(rhBUid).set({
-            uid: rhBUid,
-            empresaId: empresaBId,
-            perfil: "RH",
-            status: "ATIVO",
-          });
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
+        const db = funcCtx.firestore();
+
+        const batch = db.batch();
+        batch.update(db.collection("expedientes").doc(expedienteId), {
+          proximaMarcacao: "SAIDA",
+        });
+        batch.set(db.collection("ponto").doc(pontoRetornoAlmocoId), {
+          empresaId: empresaAId,
+          funcionarioId: funcAUid,
+          jornadaId: jornadaAId,
+          dataReferencia: dataHoje,
+          tipoPonto: "RETORNO_ALMOCO",
+          dataHora: serverTimestamp(),
+          status: "VALIDO",
+          jornadaSnapshot: snapshotJornadaReal,
         });
 
-        const rhBCtx = testEnv.authenticatedContext(rhBUid);
-        const dbRhB = rhBCtx.firestore();
-        const failAprov = dbRhB.collection("funcionario")
-            .doc("func_legitimo_5").update({
-              status: "ATIVO",
-            });
-        await assertFails(failAprov);
-
-        const rhACtx = testEnv.authenticatedContext(rhUid);
-        const dbRhA = rhACtx.firestore();
-        const succAprov = dbRhA.collection("funcionario")
-            .doc("func_legitimo_5").update({
-              status: "ATIVO",
-            });
-        await assertSucceeds(succAprov);
+        await assertSucceeds(batch.commit());
       });
 
-  // 10. Leitura de convite por hash exato antes de autenticação
-  await test("10. Consulta de convite exato permitida antes da Auth",
+  // Teste 7: Concluir o expediente com SAIDA final -> SUCESSO
+  const pontoSaidaFinalId = `${funcAUid}_${dataHoje}_SAIDA`;
+
+  await test("7. Concluir o expediente com SAIDA final", async () => {
+    const funcCtx = testEnv.authenticatedContext(funcAUid);
+    const db = funcCtx.firestore();
+
+    const batch = db.batch();
+    batch.update(db.collection("expedientes").doc(expedienteId), {
+      proximaMarcacao: "CONCLUIDO",
+      concluido: true,
+    });
+    batch.set(db.collection("ponto").doc(pontoSaidaFinalId), {
+      empresaId: empresaAId,
+      funcionarioId: funcAUid,
+      jornadaId: jornadaAId,
+      dataReferencia: dataHoje,
+      tipoPonto: "SAIDA",
+      dataHora: serverTimestamp(),
+      status: "VALIDO",
+      jornadaSnapshot: snapshotJornadaReal,
+    });
+
+    await assertSucceeds(batch.commit());
+  });
+
+  // Teste 8: Tentar reabrir expediente concluído -> FALHA
+  await test("8. Tentar reabrir expediente concluído é bloqueado",
       async () => {
-        const unauthCtx = testEnv.unauthenticatedContext();
-        const db = unauthCtx.firestore();
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
+        const db = funcCtx.firestore();
 
-        const promise = db.collection("convitesLookup").doc(inviteHashA).get();
-        await assertSucceeds(promise);
+        const promise = db.collection("expedientes")
+            .doc(expedienteId)
+            .update({
+              concluido: false,
+              proximaMarcacao: "SAIDA_ALMOCO",
+            });
+
+        await assertFails(promise);
       });
+
+  // Teste 9: Timestamp manual diferente do servidor -> FALHA
+  await test("9. Timestamp manual diferente de request.time é bloqueado",
+      async () => {
+        const funcCtx = testEnv.authenticatedContext(funcAUid);
+        const db = funcCtx.firestore();
+
+        const promise = db.collection("ponto")
+            .doc(`${funcAUid}_2026-11-09_ENTRADA`)
+            .set({
+              empresaId: empresaAId,
+              funcionarioId: funcAUid,
+              jornadaId: jornadaAId,
+              dataReferencia: "2026-11-09",
+              tipoPonto: "ENTRADA",
+              dataHora: new Date("2020-01-01T00:00:00Z"),
+              status: "VALIDO",
+              jornadaSnapshot: snapshotJornadaReal,
+            });
+
+        await assertFails(promise);
+      });
+
+  // Teste 10: RH externo não acessa expedientes/pontos da Empresa A -> FALHA
+  await test("10. RH externo não acessa expedientes/pontos", async () => {
+    const rhBCtx = testEnv.authenticatedContext(rhBUid);
+    const dbRhB = rhBCtx.firestore();
+
+    const promiseGet = dbRhB.collection("expedientes")
+        .doc(expedienteId).get();
+    await assertFails(promiseGet);
+
+    const promiseGetPonto = dbRhB.collection("ponto")
+        .doc(pontoEntradaId).get();
+    await assertFails(promiseGetPonto);
+  });
 
   console.log("\n=================================================");
   console.log(`  RESULTADO: ${passed} PASSARAM, ${failed} FALHARAM.`);

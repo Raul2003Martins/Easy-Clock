@@ -83,6 +83,10 @@
     <string name="nenhum_registro_encontrado">Nenhum registro encontrado.</string>
     <string name="banco_horas_indisponivel">Banco de horas indisponível</string>
     <string name="gerar_convite">Gerar Convite</string>
+
+    <string name="gerenciar_jornadas">Gerenciar Jornadas de Trabalho</string>
+    <string name="jornada_trabalho">Jornada de Trabalho</string>
+    <string name="vincular_funcionarios">Vincular Funcionários</string>
     <string name="aprovar">Aprovar</string>
     <string name="recusar">Recusar</string>
     <string name="pesquisar_colaborador">Pesquisar colaborador...</string>

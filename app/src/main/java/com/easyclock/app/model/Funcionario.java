@@ -11,6 +11,7 @@ public class Funcionario extends Usuario {
     private String matricula;
     private Timestamp dataAdmissao;
     private String faceId;
+    private String jornadaId;
     private Timestamp criadoEm;
 
     public Funcionario() {
@@ -97,6 +98,14 @@ public class Funcionario extends Usuario {
 
     public void setFaceId(String faceId) {
         this.faceId = faceId;
+    }
+
+    public String getJornadaId() {
+        return jornadaId;
+    }
+
+    public void setJornadaId(String jornadaId) {
+        this.jornadaId = jornadaId;
     }
 
     public Timestamp getCriadoEm() {
