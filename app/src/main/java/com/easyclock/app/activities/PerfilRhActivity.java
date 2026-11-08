@@ -28,6 +28,7 @@ public class PerfilRhActivity extends AppCompatActivity {
     private MaterialButton btnEspelhoPontoRh;
     private MaterialButton btnVisualizarHoleritesRh;
     private MaterialButton btnVerTodosColaboradores;
+    private MaterialButton btnBancoHorasRh;
     private MaterialButton btnGerarConviteRh;
     private MaterialButton btnGerenciarJornadas;
     private MaterialButton btnConsultarPontosRh;
@@ -59,6 +60,7 @@ public class PerfilRhActivity extends AppCompatActivity {
         btnEspelhoPontoRh = findViewById(R.id.btnEspelhoPontoRh);
         btnVisualizarHoleritesRh = findViewById(R.id.btnVisualizarHoleritesRh);
         btnVerTodosColaboradores = findViewById(R.id.btnVerTodosColaboradores);
+        btnBancoHorasRh = findViewById(R.id.btnBancoHorasRh);
         btnGerarConviteRh = findViewById(R.id.btnGerarConviteRh);
         btnGerenciarJornadas = findViewById(R.id.btnGerenciarJornadas);
         btnConsultarPontosRh = findViewById(R.id.btnConsultarPontosRh);
@@ -82,6 +84,13 @@ public class PerfilRhActivity extends AppCompatActivity {
                     Log.d("PerfilRhActivity", "Clicou no botão COLABORADORES. Abrindo ColaboradoresActivity...");
                 }
                 Intent intent = new Intent(PerfilRhActivity.this, ColaboradoresActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        if (btnBancoHorasRh != null) {
+            btnBancoHorasRh.setOnClickListener(v -> {
+                Intent intent = new Intent(PerfilRhActivity.this, BancoHorasRhActivity.class);
                 startActivity(intent);
             });
         }

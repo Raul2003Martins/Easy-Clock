@@ -1,4 +1,69 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "ponto",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "funcionarioId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dataHora",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ponto",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "empresaId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "funcionarioId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dataHora",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "historicoBancoHoras",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "funcionarioId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dataLancamento",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "historicoBancoHoras",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "empresaId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "funcionarioId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dataLancamento",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

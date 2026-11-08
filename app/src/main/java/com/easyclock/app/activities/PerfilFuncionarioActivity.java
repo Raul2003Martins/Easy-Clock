@@ -42,6 +42,13 @@ public class PerfilFuncionarioActivity extends AppCompatActivity {
         etNomePerfil = findViewById(R.id.etNomePerfil);
         etEmailPerfil = findViewById(R.id.etEmailPerfil);
 
+        MaterialButton btnBancoHorasFuncionario = findViewById(R.id.btnBancoHorasFuncionario);
+        if (btnBancoHorasFuncionario != null) {
+            btnBancoHorasFuncionario.setOnClickListener(v ->
+                    startActivity(new Intent(PerfilFuncionarioActivity.this, BancoHorasActivity.class))
+            );
+        }
+
         MaterialButton btnEspelhoPonto = findViewById(R.id.btnEspelhoPonto);
         if (btnEspelhoPonto != null) {
             btnEspelhoPonto.setOnClickListener(v ->

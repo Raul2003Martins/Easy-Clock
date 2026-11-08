@@ -10,8 +10,12 @@ rules_version = '2';
 // Collection: convitesLookup/{codigoHash}
 // Collection: cnpjs/{cnpj}
 // Collection: jornadasTrabalho/{jornadaId}
+// Collection: controleExpedienteAtivo/{uid}
 // Collection: expedientes/{expedienteId} ({uid}_{dataReferencia})
 // Collection: ponto/{pontoId} ({uid}_{dataReferencia}_{tipoPonto})
+// Collection: solicitacoesAjuste/{solicitacaoId}
+// Collection: bancoHoras/{uid}
+// Collection: historicoBancoHoras/{historicoId}
 // Collection: auditoriaAprovacoes/{auditId}
 // Collection: rateLimits/{rateLimitId}
 //
@@ -53,6 +57,11 @@ service cloud.firestore {
         getFuncionarioData().empresaId == empresaId;
     }
 
+    function funcionarioPertenceAEmpresaRh(targetUid) {
+      return exists(/databases/$(database)/documents/funcionario/$(targetUid)) &&
+        get(/databases/$(database)/documents/funcionario/$(targetUid)).data.empresaId == getFuncionarioData().empresaId;
+    }
+
     function pontoExiste(uid, dataRef, tipo) {
       return exists(/databases/$(database)/documents/ponto/$(uid + '_' + dataRef + '_' + tipo));
     }
@@ -61,21 +70,143 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/expedientes/$(uid + '_' + dataRef));
     }
 
+    function temExpedienteAtivoAbilidade(uid) {
+      return exists(/databases/$(database)/documents/controleExpedienteAtivo/$(uid)) &&
+        get(/databases/$(database)/documents/controleExpedienteAtivo/$(uid)).data.estado == "ABERTO";
+    }
+
+    function formatDigit(n) {
+      return n < 10 ? "0" + string(n) : string(n);
+    }
+
+    function dataServidorUtc(t) {
+      return string(t.year()) + "-" + formatDigit(t.month()) + "-" + formatDigit(t.day());
+    }
+
     // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
 
+    // Collection: bancoHoras/{uid}
+    match /bancoHoras/{uid} {
+      allow get: if isOwner(uid) ||
+        (isRhAtivo() && funcionarioPertenceAEmpresaRh(uid));
+
+      allow list: if isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId;
+
+      allow create, update: if isUsuarioAtivo() &&
+        (
+          (
+            request.auth.uid == uid &&
+            request.resource.data.empresaId == getFuncionarioData().empresaId
+          ) ||
+          (
+            isRhAtivo() &&
+            funcionarioPertenceAEmpresaRh(uid)
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    // Collection: historicoBancoHoras/{historicoId}
+    match /historicoBancoHoras/{historicoId} {
+      allow get, list: if isUsuarioAtivo() &&
+        (
+          resource.data.funcionarioId == request.auth.uid ||
+          (isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId)
+        );
+
+      allow create: if isUsuarioAtivo() &&
+        request.resource.data.tipo in ['AUTOMATICO_EXPEDIENTE', 'AJUSTE_MANUAL_RH'] &&
+        (
+          (
+            request.resource.data.tipo == "AUTOMATICO_EXPEDIENTE" &&
+            request.resource.data.funcionarioId == request.auth.uid &&
+            request.resource.data.empresaId == getFuncionarioData().empresaId
+          ) ||
+          (
+            request.resource.data.tipo == "AJUSTE_MANUAL_RH" &&
+            isRhAtivo() &&
+            request.resource.data.empresaId == getFuncionarioData().empresaId &&
+            request.resource.data.justificativa is string &&
+            request.resource.data.justificativa.size() >= 5
+          )
+        );
+
+      allow update, delete: if false;
+    }
+
+    // Collection: solicitacoesAjuste/{solicitacaoId}
+    match /solicitacoesAjuste/{solicitacaoId} {
+      allow get, list: if isOwner(resource.data.funcionarioId) ||
+        (isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId);
+
+      allow create: if isUsuarioAtivo() &&
+        request.resource.data.funcionarioId == request.auth.uid &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.status == "PENDENTE" &&
+        request.resource.data.tipoPonto in ['ENTRADA', 'SAIDA_ALMOCO', 'RETORNO_ALMOCO', 'SAIDA'] &&
+        request.resource.data.motivo is string &&
+        request.resource.data.motivo.size() >= 10 &&
+        request.resource.data.motivo.size() <= 300 &&
+        request.resource.data.horarioAjustado.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$') &&
+        request.resource.data.dataReferencia.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+
+      allow update: if isRhAtivo() &&
+        resource.data.empresaId == getFuncionarioData().empresaId &&
+        resource.data.status == "PENDENTE" &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'dataResposta', 'rhUid', 'respostaRh']) &&
+        request.resource.data.status in ['APROVADO', 'RECUSADO'] &&
+        request.resource.data.rhUid == request.auth.uid;
+
+      allow delete: if false;
+    }
+
+    // Collection: controleExpedienteAtivo/{uid}
+    match /controleExpedienteAtivo/{uid} {
+      allow get: if isOwner(uid) ||
+        (isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId);
+
+      allow create, update: if isUsuarioAtivo() &&
+        uid == request.auth.uid &&
+        request.resource.data.funcionarioId == request.auth.uid &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.keys().hasOnly(['funcionarioId', 'empresaId', 'expedienteId', 'dataReferencia', 'estado', 'atualizadoEm']) &&
+        (
+          (
+            request.resource.data.estado == "ABERTO" &&
+            (!exists(/databases/$(database)/documents/controleExpedienteAtivo/$(uid)) || resource.data.estado == "CONCLUIDO") &&
+            getAfter(/databases/$(database)/documents/expedientes/$(request.resource.data.expedienteId)).data.proximaMarcacao == "SAIDA_ALMOCO" &&
+            getAfter(/databases/$(database)/documents/ponto/$(request.resource.data.expedienteId + '_ENTRADA')).data.tipoPonto == "ENTRADA"
+          ) ||
+          (
+            request.resource.data.estado == "ABERTO" &&
+            resource.data.estado == "ABERTO" &&
+            request.resource.data.expedienteId == resource.data.expedienteId &&
+            request.resource.data.dataReferencia == resource.data.dataReferencia
+          ) ||
+          (
+            request.resource.data.estado == "CONCLUIDO" &&
+            resource.data.estado == "ABERTO" &&
+            request.resource.data.expedienteId == resource.data.expedienteId &&
+            request.resource.data.dataReferencia == resource.data.dataReferencia &&
+            getAfter(/databases/$(database)/documents/expedientes/$(resource.data.expedienteId)).data.concluido == true &&
+            getAfter(/databases/$(database)/documents/ponto/$(resource.data.expedienteId + '_SAIDA')).data.tipoPonto == "SAIDA"
+          )
+        );
+
+      allow delete: if false;
+    }
+
     // Collection: funcionario
     match /funcionario/{uid} {
-      // 1. Get own profile (even when pending approval or inativo)
       allow get: if isOwner(uid);
 
-      // 2. Active RH can list/get employee documents belonging ONLY to their company
       allow get, list: if isRhAtivo() &&
         resource.data.empresaId == getFuncionarioData().empresaId;
 
-      // 3. Create initial profile during registration:
       allow create: if isOwner(uid) &&
         request.resource.data.uid == uid &&
         (
@@ -92,7 +223,6 @@ service cloud.firestore {
           )
         );
 
-      // 4. Update: Active RH of the same company can change status OR jornadaId
       allow update: if isRhAtivo() &&
         'empresaId' in resource.data &&
         resource.data.empresaId == getFuncionarioData().empresaId &&
@@ -122,13 +252,13 @@ service cloud.firestore {
       allow get: if isOwner(resource.data.funcionarioId) ||
         (isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId);
 
-      // Creation on ENTRADA
       allow create: if isUsuarioAtivo() &&
         request.resource.data.funcionarioId == request.auth.uid &&
         request.resource.data.empresaId == getFuncionarioData().empresaId &&
-        request.resource.data.dataReferencia.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        request.resource.data.dataReferencia == dataServidorUtc(request.time) &&
         expedienteId == request.auth.uid + "_" + request.resource.data.dataReferencia &&
         !expedienteExiste(request.auth.uid, request.resource.data.dataReferencia) &&
+        !temExpedienteAtivoAbilidade(request.auth.uid) &&
         request.resource.data.jornadaId == getFuncionarioData().jornadaId &&
         exists(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)) &&
         get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.empresaId == getFuncionarioData().empresaId &&
@@ -138,10 +268,12 @@ service cloud.firestore {
         request.resource.data.jornadaSnapshot.retornoAlmoco == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.retornoAlmoco &&
         request.resource.data.jornadaSnapshot.saida == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.saida &&
         request.resource.data.jornadaSnapshot.cargaHorariaMinutos == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.cargaHorariaMinutos &&
+        request.resource.data.jornadaSnapshot.toleranciaMinutos == get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.toleranciaMinutos &&
         request.resource.data.proximaMarcacao == "SAIDA_ALMOCO" &&
-        request.resource.data.concluido == false;
+        request.resource.data.concluido == false &&
+        getAfter(/databases/$(database)/documents/ponto/$(expedienteId + '_ENTRADA')).data.tipoPonto == "ENTRADA" &&
+        getAfter(/databases/$(database)/documents/controleExpedienteAtivo/$(request.auth.uid)).data.estado == "ABERTO";
 
-      // Update on subsequent punches
       allow update: if isUsuarioAtivo() &&
         resource.data.funcionarioId == request.auth.uid &&
         resource.data.concluido == false &&
@@ -149,22 +281,24 @@ service cloud.firestore {
         request.resource.data.empresaId == resource.data.empresaId &&
         request.resource.data.jornadaId == resource.data.jornadaId &&
         request.resource.data.dataReferencia == resource.data.dataReferencia &&
-        request.resource.data.jornadaSnapshot == resource.data.jornadaSnapshot &&
         (
           (
             resource.data.proximaMarcacao == "SAIDA_ALMOCO" &&
             request.resource.data.proximaMarcacao == "RETORNO_ALMOCO" &&
-            request.resource.data.concluido == false
+            request.resource.data.concluido == false &&
+            getAfter(/databases/$(database)/documents/ponto/$(expedienteId + '_SAIDA_ALMOCO')).data.tipoPonto == "SAIDA_ALMOCO"
           ) ||
           (
             resource.data.proximaMarcacao == "RETORNO_ALMOCO" &&
             request.resource.data.proximaMarcacao == "SAIDA" &&
-            request.resource.data.concluido == false
+            request.resource.data.concluido == false &&
+            getAfter(/databases/$(database)/documents/ponto/$(expedienteId + '_RETORNO_ALMOCO')).data.tipoPonto == "RETORNO_ALMOCO"
           ) ||
           (
             resource.data.proximaMarcacao == "SAIDA" &&
             request.resource.data.proximaMarcacao == "CONCLUIDO" &&
-            request.resource.data.concluido == true
+            request.resource.data.concluido == true &&
+            getAfter(/databases/$(database)/documents/ponto/$(expedienteId + '_SAIDA')).data.tipoPonto == "SAIDA"
           )
         );
 
@@ -180,33 +314,33 @@ service cloud.firestore {
         request.resource.data.funcionarioId == request.auth.uid &&
         request.resource.data.empresaId == getFuncionarioData().empresaId &&
         request.resource.data.dataHora == request.time &&
-        request.resource.data.dataReferencia.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
         request.resource.data.tipoPonto in ['ENTRADA', 'SAIDA_ALMOCO', 'RETORNO_ALMOCO', 'SAIDA'] &&
         request.resource.data.status == "VALIDO" &&
         pontoId == request.auth.uid + "_" + request.resource.data.dataReferencia + "_" + request.resource.data.tipoPonto &&
         (
           (
             request.resource.data.tipoPonto == "ENTRADA" &&
+            request.resource.data.dataReferencia == dataServidorUtc(request.time) &&
             !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "ENTRADA") &&
-            getAfter(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+            getAfter(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot.cargaHorariaMinutos == request.resource.data.jornadaSnapshot.cargaHorariaMinutos
           ) ||
           (
             request.resource.data.tipoPonto == "SAIDA_ALMOCO" &&
             pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "ENTRADA") &&
             !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "SAIDA_ALMOCO") &&
-            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot.cargaHorariaMinutos == request.resource.data.jornadaSnapshot.cargaHorariaMinutos
           ) ||
           (
             request.resource.data.tipoPonto == "RETORNO_ALMOCO" &&
             pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "SAIDA_ALMOCO") &&
             !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "RETORNO_ALMOCO") &&
-            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot.cargaHorariaMinutos == request.resource.data.jornadaSnapshot.cargaHorariaMinutos
           ) ||
           (
             request.resource.data.tipoPonto == "SAIDA" &&
             pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "RETORNO_ALMOCO") &&
             !pontoExiste(request.auth.uid, request.resource.data.dataReferencia, "SAIDA") &&
-            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot == request.resource.data.jornadaSnapshot
+            get(/databases/$(database)/documents/expedientes/$(request.auth.uid + '_' + request.resource.data.dataReferencia)).data.jornadaSnapshot.cargaHorariaMinutos == request.resource.data.jornadaSnapshot.cargaHorariaMinutos
           )
         );
 

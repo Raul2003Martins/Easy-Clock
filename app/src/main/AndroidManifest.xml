@@ -36,6 +36,7 @@
 
         <activity android:name=".activities.RegistroPontoActivity" />
         <activity android:name=".activities.HistoricoPontoActivity" />
+        <activity android:name=".activities.BancoHorasActivity" />
 
         <!-- RH Activities -->
         <activity android:name=".activities.PerfilRhActivity" />
@@ -50,6 +51,7 @@
         <activity android:name=".activities.CadastroJornadaActivity" />
         <activity android:name=".activities.VincularJornadaActivity" />
         <activity android:name=".activities.ConsultaPontosRhActivity" />
+        <activity android:name=".activities.BancoHorasRhActivity" />
     </application>
 
 </manifest>

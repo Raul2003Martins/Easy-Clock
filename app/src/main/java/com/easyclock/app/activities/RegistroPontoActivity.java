@@ -58,6 +58,7 @@ public class RegistroPontoActivity extends AppCompatActivity {
     private JornadaTrabalho jornadaAtual;
 
     private String dataReferenciaHoje;
+    private String dataReferenciaAtiva;
     private String proximaMarcacaoTipo = "ENTRADA";
     private boolean jornadaConcluidaHoje = false;
 
@@ -99,8 +100,9 @@ public class RegistroPontoActivity extends AppCompatActivity {
         btnVerHistoricoPonto = findViewById(R.id.btnVerHistoricoPonto);
 
         SimpleDateFormat sdfDataRef = new SimpleDateFormat("yyyy-MM-dd", new Locale("pt", "BR"));
-        sdfDataRef.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
+        sdfDataRef.setTimeZone(TimeZone.getTimeZone("UTC"));
         dataReferenciaHoje = sdfDataRef.format(new Date());
+        dataReferenciaAtiva = dataReferenciaHoje;
 
         SimpleDateFormat sdfDataExib = new SimpleDateFormat("EEEE, d 'de' MMMM 'de' yyyy", new Locale("pt", "BR"));
         sdfDataExib.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
@@ -200,15 +202,41 @@ public class RegistroPontoActivity extends AppCompatActivity {
     }
 
     private void carregarPontosHoje() {
-        pontoDAO.listarPontosDoDia(uidFuncionario, dataReferenciaHoje)
-                .addOnSuccessListener(listaPontos -> {
-                    if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+        pontoDAO.buscarControleExpedienteAtivo(uidFuncionario)
+                .addOnSuccessListener(ctrlDoc -> {
+                    if (ctrlDoc != null && ctrlDoc.exists() && "ABERTO".equalsIgnoreCase(ctrlDoc.getString("estado"))) {
+                        String dataRefAtiva = ctrlDoc.getString("dataReferencia");
+                        if (dataRefAtiva != null && !dataRefAtiva.trim().isEmpty()) {
+                            dataReferenciaAtiva = dataRefAtiva.trim();
+                        } else {
+                            dataReferenciaAtiva = dataReferenciaHoje;
+                        }
+                    } else {
+                        dataReferenciaAtiva = dataReferenciaHoje;
+                    }
 
-                    atualizarStatusMarcacoesEProximoTipo(listaPontos);
+                    pontoDAO.listarPontosDoDia(uidFuncionario, dataReferenciaAtiva)
+                            .addOnSuccessListener(listaPontos -> {
+                                if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+
+                                atualizarStatusMarcacoesEProximoTipo(listaPontos);
+                            })
+                            .addOnFailureListener(e -> {
+                                if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                                Toast.makeText(this, "Erro ao consultar pontos de hoje: " + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
-                    Toast.makeText(this, "Erro ao consultar pontos de hoje: " + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                    dataReferenciaAtiva = dataReferenciaHoje;
+                    pontoDAO.listarPontosDoDia(uidFuncionario, dataReferenciaAtiva)
+                            .addOnSuccessListener(listaPontos -> {
+                                if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                                atualizarStatusMarcacoesEProximoTipo(listaPontos);
+                            })
+                            .addOnFailureListener(err -> {
+                                if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                                Toast.makeText(this, "Erro ao consultar pontos: " + err.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 });
     }
 
@@ -322,7 +350,7 @@ public class RegistroPontoActivity extends AppCompatActivity {
                         Toast.makeText(this, "Falha ao registrar ponto: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                     });
         } else {
-            pontoDAO.buscarExpedienteDoDia(uidFuncionario, dataReferenciaHoje)
+            pontoDAO.buscarExpedienteDoDia(uidFuncionario, dataReferenciaAtiva)
                     .addOnSuccessListener(expDoc -> {
                         if (expDoc == null || !expDoc.exists() || expDoc.get("jornadaSnapshot") == null) {
                             if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
@@ -343,20 +371,69 @@ public class RegistroPontoActivity extends AppCompatActivity {
                         p.setEmpresaId(empresaIdFuncionario);
                         p.setFuncionarioId(uidFuncionario);
                         p.setJornadaId(jornadaIdFuncionario);
-                        p.setDataReferencia(dataReferenciaHoje);
+                        p.setDataReferencia(dataReferenciaAtiva);
                         p.setTipoPonto(proximaMarcacaoTipo);
                         p.setJornadaSnapshot(frozenSnapshot);
 
-                        pontoDAO.registrarPontoComExpediente(p, frozenSnapshot, proximaDep)
-                                .addOnSuccessListener(unused -> {
-                                    Toast.makeText(this, "Ponto " + formatarTipoPonto(proximaMarcacaoTipo) + " registrado com sucesso!", Toast.LENGTH_SHORT).show();
-                                    carregarPontosHoje();
-                                })
-                                .addOnFailureListener(e -> {
-                                    if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
-                                    if (btnConfirmarPonto != null) btnConfirmarPonto.setEnabled(true);
-                                    Toast.makeText(this, "Falha ao registrar ponto: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                                });
+                        final String proximaDepFinal = proximaDep;
+
+                        if ("SAIDA".equalsIgnoreCase(proximaMarcacaoTipo)) {
+                            pontoDAO.listarPontosDoDia(uidFuncionario, dataReferenciaAtiva)
+                                    .addOnSuccessListener(pontosDoDia -> {
+                                        com.google.firebase.Timestamp tEntrada = null;
+                                        com.google.firebase.Timestamp tSaidaAlmoco = null;
+                                        com.google.firebase.Timestamp tRetornoAlmoco = null;
+                                        com.google.firebase.Timestamp tSaida = com.google.firebase.Timestamp.now();
+
+                                        if (pontosDoDia != null) {
+                                            for (Ponto pontoItem : pontosDoDia) {
+                                                if (pontoItem == null) continue;
+                                                if ("ENTRADA".equalsIgnoreCase(pontoItem.getTipoPonto())) tEntrada = pontoItem.getDataHora();
+                                                else if ("SAIDA_ALMOCO".equalsIgnoreCase(pontoItem.getTipoPonto())) tSaidaAlmoco = pontoItem.getDataHora();
+                                                else if ("RETORNO_ALMOCO".equalsIgnoreCase(pontoItem.getTipoPonto())) tRetornoAlmoco = pontoItem.getDataHora();
+                                            }
+                                        }
+
+                                        long cargaPrevista = 480;
+                                        long tolerancia = 5;
+                                        if (frozenSnapshot != null) {
+                                            Object cVal = frozenSnapshot.get("cargaHorariaMinutos");
+                                            if (cVal instanceof Number) cargaPrevista = ((Number) cVal).longValue();
+                                            Object tVal = frozenSnapshot.get("toleranciaMinutos");
+                                            if (tVal instanceof Number) tolerancia = ((Number) tVal).longValue();
+                                        }
+
+                                        long minsTrabalhados = com.easyclock.app.service.BancoHorasService.calcularMinutosTrabalhados(tEntrada, tSaidaAlmoco, tRetornoAlmoco, tSaida);
+                                        long minsSaldo = com.easyclock.app.service.BancoHorasService.calcularSaldoMinutos(minsTrabalhados, cargaPrevista, tolerancia);
+
+                                        pontoDAO.registrarPontoComExpedienteEBancoHoras(p, frozenSnapshot, proximaDepFinal, minsTrabalhados, cargaPrevista, minsSaldo)
+                                                .addOnSuccessListener(unused -> {
+                                                    Toast.makeText(this, "Ponto " + formatarTipoPonto(proximaMarcacaoTipo) + " registrado e saldo calculado!", Toast.LENGTH_SHORT).show();
+                                                    carregarPontosHoje();
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                                                    if (btnConfirmarPonto != null) btnConfirmarPonto.setEnabled(true);
+                                                    Toast.makeText(this, "Falha ao registrar ponto: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                                });
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                                        if (btnConfirmarPonto != null) btnConfirmarPonto.setEnabled(true);
+                                        Toast.makeText(this, "Falha ao calcular banco de horas: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                    });
+                        } else {
+                            pontoDAO.registrarPontoComExpediente(p, frozenSnapshot, proximaDepFinal)
+                                    .addOnSuccessListener(unused -> {
+                                        Toast.makeText(this, "Ponto " + formatarTipoPonto(proximaMarcacaoTipo) + " registrado com sucesso!", Toast.LENGTH_SHORT).show();
+                                        carregarPontosHoje();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                                        if (btnConfirmarPonto != null) btnConfirmarPonto.setEnabled(true);
+                                        Toast.makeText(this, "Falha ao registrar ponto: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                    });
+                        }
                     })
                     .addOnFailureListener(e -> {
                         if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
