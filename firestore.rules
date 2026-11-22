@@ -223,28 +223,36 @@ service cloud.firestore {
           )
         );
 
-      allow update: if isRhAtivo() &&
-        'empresaId' in resource.data &&
-        resource.data.empresaId == getFuncionarioData().empresaId &&
+      allow update: if (
         (
+          isOwner(uid) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasAny(['reconhecimentoFacialCadastrado', 'fotoPerfilPath'])
+        ) ||
+        (
+          isRhAtivo() &&
+          'empresaId' in resource.data &&
+          resource.data.empresaId == getFuncionarioData().empresaId &&
           (
-            resource.data.status == "PENDENTE_APROVACAO" &&
-            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
-            request.resource.data.status in ['ATIVO', 'RECUSADO']
-          ) ||
-          (
-            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['jornadaId']) &&
             (
-              request.resource.data.jornadaId == "" ||
-              request.resource.data.jornadaId == null ||
+              resource.data.status == "PENDENTE_APROVACAO" &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+              request.resource.data.status in ['ATIVO', 'RECUSADO']
+            ) ||
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['jornadaId']) &&
               (
-                exists(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)) &&
-                get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.empresaId == resource.data.empresaId &&
-                get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.ativo == true
+                request.resource.data.jornadaId == "" ||
+                request.resource.data.jornadaId == null ||
+                (
+                  exists(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)) &&
+                  get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.empresaId == resource.data.empresaId &&
+                  get(/databases/$(database)/documents/jornadasTrabalho/$(request.resource.data.jornadaId)).data.ativo == true
+                )
               )
             )
           )
-        );
+        )
+      );
     }
 
     // Collection: expedientes ({uid}_{dataReferencia})
@@ -377,7 +385,12 @@ service cloud.firestore {
         request.resource.data.responsavelId == request.auth.uid &&
         request.resource.data.status == "ATIVA";
 
-      allow list, update, delete: if false;
+      allow update: if isRhAtivo() &&
+        pertenceAEmpresa(empresaId) &&
+        request.resource.data.responsavelId == resource.data.responsavelId &&
+        request.resource.data.status == resource.data.status;
+
+      allow list, delete: if false;
     }
 
     // Collection: cnpjs

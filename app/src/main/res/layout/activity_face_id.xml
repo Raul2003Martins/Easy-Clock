@@ -21,10 +21,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:text="@string/faceid_instrucao"
         android:textAlignment="center"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:textColor="@color/text_primary"
         app:layout_constraintTop_toBottomOf="@id/toolbarFaceId"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,57 +41,74 @@
         app:strokeWidth="3dp"
         app:cardBackgroundColor="#11000000"
         app:layout_constraintTop_toBottomOf="@id/tvInstrucaoFaceId"
-        app:layout_constraintBottom_toTopOf="@id/btnBaterPontoFaceId"
+        app:layout_constraintBottom_toTopOf="@id/tvStatusBiometriaDetalhado"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp">
+            android:layout_height="match_parent">
+
+            <androidx.camera.view.PreviewView
+                android:id="@+id/previewViewFaceId"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <ImageView
-                android:id="@+id/ivFaceIcon"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:id="@+id/ivFaceOverlayGuide"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_gravity="center"
                 android:src="@drawable/ic_face_id"
                 android:contentDescription="@null"
-                app:tint="@color/primary"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <TextView
-                android:id="@+id/tvFaceIdStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="FaceID"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/ivFaceIcon"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                app:tint="#442196F3" />
+        </FrameLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Botão de bater ponto trancado até o FaceID dar certo -->
+    <TextView
+        android:id="@+id/tvStatusBiometriaDetalhado"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="16dp"
+        android:text="Aguardando inicialização da câmera..."
+        android:textAlignment="center"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        app:layout_constraintBottom_toTopOf="@id/btnCapturarFacial"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCapturarFacial"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="12dp"
+        android:text="CAPTURAR E VALIDAR ROSTO"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_person"
+        app:iconGravity="textStart"
+        app:layout_constraintBottom_toTopOf="@id/btnBaterPontoFaceId"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBaterPontoFaceId"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="56dp"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="40dp"
-        android:text="@string/bater_ponto_trancado"
-        android:textSize="16sp"
+        android:layout_marginBottom="24dp"
+        android:text="CONFIRMAR PONTO COM BIOMETRIA"
+        android:textSize="14sp"
         android:textStyle="bold"
         android:enabled="false"
         app:cornerRadius="12dp"
-        app:icon="@drawable/ic_clock"
+        app:icon="@drawable/ic_check_circle"
         app:iconGravity="textStart"
-        app:iconPadding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

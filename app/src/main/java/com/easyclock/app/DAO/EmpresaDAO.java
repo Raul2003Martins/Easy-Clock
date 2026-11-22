@@ -117,4 +117,20 @@ public class EmpresaDAO {
         return db.collection(COLECAO)
                 .document(empresaId);
     }
+
+    public Task<Void> atualizarLocalizacaoPonto(String empresaId, com.easyclock.app.model.LocalizacaoPonto localizacaoPonto) {
+        if (empresaId == null || empresaId.trim().isEmpty() || localizacaoPonto == null) {
+            return Tasks.forException(new IllegalArgumentException("Dados de localização da empresa inválidos."));
+        }
+
+        java.util.Map<String, Object> updateMap = new java.util.HashMap<>();
+        updateMap.put("localizacaoPonto", localizacaoPonto);
+        updateMap.put("latitude", localizacaoPonto.getLatitude());
+        updateMap.put("longitude", localizacaoPonto.getLongitude());
+        updateMap.put("raioPermitido", localizacaoPonto.getRaioMetros());
+
+        return db.collection(COLECAO)
+                .document(empresaId.trim())
+                .update(updateMap);
+    }
 }

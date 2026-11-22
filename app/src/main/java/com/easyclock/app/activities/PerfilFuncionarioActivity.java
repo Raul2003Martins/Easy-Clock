@@ -1,16 +1,22 @@
 package com.easyclock.app.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.easyclock.app.R;
 import com.easyclock.app.dao.FuncionarioDAO;
 import com.easyclock.app.service.AutenticacaoService;
+import com.easyclock.app.service.ReconhecimentoFacialService;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.io.File;
 
 public class PerfilFuncionarioActivity extends AppCompatActivity {
 
@@ -29,7 +35,6 @@ public class PerfilFuncionarioActivity extends AppCompatActivity {
         funcionarioDAO = new FuncionarioDAO();
 
         inicializarComponentes();
-        configurarListeners();
         carregarDadosUsuario();
     }
 
@@ -75,12 +80,19 @@ public class PerfilFuncionarioActivity extends AppCompatActivity {
         }
     }
 
-    private void configurarListeners() {
-    }
-
     private void carregarDadosUsuario() {
         String uid = autenticacaoService.getUidAtual();
         if (uid != null) {
+            ImageView ivAvatar = findViewById(R.id.ivAvatar);
+            File fotoFile = ReconhecimentoFacialService.obterArquivoFotoPerfil(this, uid);
+            if (fotoFile != null && ivAvatar != null) {
+                Bitmap bmp = BitmapFactory.decodeFile(fotoFile.getAbsolutePath());
+                if (bmp != null) {
+                    ivAvatar.setImageBitmap(bmp);
+                    ivAvatar.setImageTintList(null);
+                }
+            }
+
             funcionarioDAO.buscarPorUid(uid)
                     .addOnSuccessListener(func -> {
                         if (func != null) {

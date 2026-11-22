@@ -23,6 +23,7 @@ public class Ponto {
     private Double latitude;
     private Double longitude;
     private String metodoAutenticacao;
+    private LocalizacaoRegistro localizacaoRegistro;
 
     public Ponto() {
         this.status = "VALIDO";
@@ -163,5 +164,13 @@ public class Ponto {
 
     public void setMetodoAutenticacao(String metodoAutenticacao) {
         this.metodoAutenticacao = metodoAutenticacao;
+    }
+
+    public LocalizacaoRegistro getLocalizacaoRegistro() {
+        return localizacaoRegistro;
+    }
+
+    public void setLocalizacaoRegistro(LocalizacaoRegistro localizacaoRegistro) {
+        this.localizacaoRegistro = localizacaoRegistro;
     }
 }

@@ -180,6 +180,21 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnConfigurarLocalizacaoEmpresa"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="8dp"
+            android:text="Localização da Empresa (100m)"
+            android:textSize="12sp"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_location"
+            app:iconGravity="textStart"
+            app:layout_constraintTop_toBottomOf="@id/btnConsultarPontosRh"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogoutRh"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
@@ -193,7 +208,7 @@
             app:icon="@drawable/ic_logout"
             app:iconTint="@color/button_danger"
             app:iconGravity="textStart"
-            app:layout_constraintTop_toBottomOf="@id/btnConsultarPontosRh"
+            app:layout_constraintTop_toBottomOf="@id/btnConfigurarLocalizacaoEmpresa"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

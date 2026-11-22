@@ -17,6 +17,7 @@ public class Empresa {
     private String responsavelId;
     private String status;
     private Timestamp criadoEm;
+    private LocalizacaoPonto localizacaoPonto;
 
     public Empresa() {
         // Construtor vazio necessário para o Firestore
@@ -125,5 +126,13 @@ public class Empresa {
 
     public void setCriadoEm(Timestamp criadoEm) {
         this.criadoEm = criadoEm;
+    }
+
+    public LocalizacaoPonto getLocalizacaoPonto() {
+        return localizacaoPonto;
+    }
+
+    public void setLocalizacaoPonto(LocalizacaoPonto localizacaoPonto) {
+        this.localizacaoPonto = localizacaoPonto;
     }
 }
