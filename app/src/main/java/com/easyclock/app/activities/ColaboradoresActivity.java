@@ -80,10 +80,23 @@ public class ColaboradoresActivity extends AppCompatActivity {
 
     private void configurarAdapters() {
         funcionarioAdapter = new FuncionarioAdapter(funcionario -> {
-            Intent intent = new Intent(ColaboradoresActivity.this, EspelhoPontoFuncionarioActivity.class);
-            intent.putExtra("funcionarioUid", funcionario.getUid());
-            intent.putExtra("funcionarioNome", funcionario.getNome());
-            startActivity(intent);
+            if (funcionario == null) return;
+
+            String[] opcoes = new String[]{"Ver Espelho de Ponto", "Autorizar Recadastro Facial (v2)"};
+            new AlertDialog.Builder(this)
+                    .setTitle(funcionario.getNome() != null ? funcionario.getNome() : "Opções do Colaborador")
+                    .setItems(opcoes, (dialog, which) -> {
+                        if (which == 0) {
+                            Intent intent = new Intent(ColaboradoresActivity.this, EspelhoPontoFuncionarioActivity.class);
+                            intent.putExtra("funcionarioUid", funcionario.getUid());
+                            intent.putExtra("funcionarioNome", funcionario.getNome());
+                            startActivity(intent);
+                        } else if (which == 1) {
+                            confirmarAutorizacaoRecadastroFacial(funcionario);
+                        }
+                    })
+                    .setNegativeButton("CANCELAR", null)
+                    .show();
         });
 
         solicitacaoAdapter = new SolicitacaoCadastroAdapter(new SolicitacaoCadastroAdapter.OnSolicitacaoAcaoListener() {
@@ -241,6 +254,49 @@ public class ColaboradoresActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     exibirLoading(false);
                     Toast.makeText(this, "Erro ao carregar solicitações: " + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void confirmarAutorizacaoRecadastroFacial(Funcionario funcionario) {
+        if (funcionario == null || funcionario.getUid() == null) return;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Autorizar Recadastro Facial")
+                .setMessage("Deseja autorizar o recadastro facial para " + (funcionario.getNome() != null ? funcionario.getNome() : "este colaborador") + "?\n\nNo próximo acesso, o colaborador poderá realizar um novo cadastro com o algoritmo atualizado v2.")
+                .setPositiveButton("AUTORIZAR", (dialog, which) -> executarAutorizacaoRecadastro(funcionario))
+                .setNegativeButton("CANCELAR", null)
+                .show();
+    }
+
+    private void executarAutorizacaoRecadastro(Funcionario funcionario) {
+        String rhUid = autenticacaoService.getUidAtual();
+        if (funcionario == null || funcionario.getUid() == null || rhUid == null) return;
+
+        exibirLoading(true);
+
+        com.easyclock.app.dao.SolicitacaoRecadastroDAO recadastroDAO = new com.easyclock.app.dao.SolicitacaoRecadastroDAO();
+        recadastroDAO.aprovarSolicitacao(funcionario.getUid(), rhUid)
+                .addOnSuccessListener(unused -> {
+                    exibirLoading(false);
+                    Toast.makeText(this, "Recadastro facial autorizado com sucesso!", Toast.LENGTH_LONG).show();
+                    carregarFuncionariosAtivos();
+                })
+                .addOnFailureListener(e -> {
+                    // Fallback para atualização direta do campo se o documento de solicitação não existir
+                    java.util.Map<String, Object> updateMap = new java.util.HashMap<>();
+                    updateMap.put("solicitacaoRecadastroAutorizada", true);
+                    updateMap.put("solicitacaoRecadastroPendente", false);
+
+                    funcionarioDAO.atualizarCampos(funcionario.getUid(), updateMap)
+                            .addOnSuccessListener(unused2 -> {
+                                exibirLoading(false);
+                                Toast.makeText(this, "Recadastro facial autorizado com sucesso!", Toast.LENGTH_LONG).show();
+                                carregarFuncionariosAtivos();
+                            })
+                            .addOnFailureListener(err -> {
+                                exibirLoading(false);
+                                Toast.makeText(this, "Erro ao autorizar recadastro: " + err.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 });
     }
 

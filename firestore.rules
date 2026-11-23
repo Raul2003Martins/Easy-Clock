@@ -14,6 +14,7 @@ rules_version = '2';
 // Collection: expedientes/{expedienteId} ({uid}_{dataReferencia})
 // Collection: ponto/{pontoId} ({uid}_{dataReferencia}_{tipoPonto})
 // Collection: solicitacoesAjuste/{solicitacaoId}
+// Collection: solicitacoesRecadastro/{uid}
 // Collection: bancoHoras/{uid}
 // Collection: historicoBancoHoras/{historicoId}
 // Collection: auditoriaAprovacoes/{auditId}
@@ -138,6 +139,28 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Collection: solicitacoesRecadastro/{uid}
+    match /solicitacoesRecadastro/{uid} {
+      allow get: if isOwner(uid) ||
+        (isRhAtivo() && funcionarioPertenceAEmpresaRh(uid));
+
+      allow list: if isRhAtivo() && resource.data.empresaId == getFuncionarioData().empresaId;
+
+      allow create: if isUsuarioAtivo() &&
+        request.auth.uid == uid &&
+        request.resource.data.funcionarioId == uid &&
+        request.resource.data.empresaId == getFuncionarioData().empresaId &&
+        request.resource.data.status == "PENDENTE";
+
+      allow update: if isRhAtivo() &&
+        funcionarioPertenceAEmpresaRh(uid) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'rhUid', 'dataResposta']) &&
+        request.resource.data.status in ['APROVADO', 'RECUSADO'] &&
+        request.resource.data.rhUid == request.auth.uid;
+
+      allow delete: if false;
+    }
+
     // Collection: solicitacoesAjuste/{solicitacaoId}
     match /solicitacoesAjuste/{solicitacaoId} {
       allow get, list: if isOwner(resource.data.funcionarioId) ||
@@ -226,13 +249,14 @@ service cloud.firestore {
       allow update: if (
         (
           isOwner(uid) &&
-          request.resource.data.diff(resource.data).affectedKeys().hasAny(['reconhecimentoFacialCadastrado', 'fotoPerfilPath'])
+          request.resource.data.diff(resource.data).affectedKeys().hasAny(['reconhecimentoFacialCadastrado', 'fotoPerfilPath', 'solicitacaoRecadastroAutorizada', 'solicitacaoRecadastroPendente'])
         ) ||
         (
           isRhAtivo() &&
           'empresaId' in resource.data &&
           resource.data.empresaId == getFuncionarioData().empresaId &&
           (
+            request.resource.data.diff(resource.data).affectedKeys().hasAny(['solicitacaoRecadastroAutorizada', 'solicitacaoRecadastroPendente']) ||
             (
               resource.data.status == "PENDENTE_APROVACAO" &&
               request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&

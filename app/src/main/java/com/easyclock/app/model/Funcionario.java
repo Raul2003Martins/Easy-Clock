@@ -13,6 +13,8 @@ public class Funcionario extends Usuario {
     private String faceId;
     private String jornadaId;
     private boolean reconhecimentoFacialCadastrado;
+    private boolean solicitacaoRecadastroAutorizada;
+    private boolean solicitacaoRecadastroPendente;
     private String fotoPerfilPath;
     private Timestamp criadoEm;
 
@@ -124,6 +126,22 @@ public class Funcionario extends Usuario {
 
     public void setReconhecimentoFacialCadastrado(boolean reconhecimentoFacialCadastrado) {
         this.reconhecimentoFacialCadastrado = reconhecimentoFacialCadastrado;
+    }
+
+    public boolean isSolicitacaoRecadastroAutorizada() {
+        return solicitacaoRecadastroAutorizada;
+    }
+
+    public void setSolicitacaoRecadastroAutorizada(boolean solicitacaoRecadastroAutorizada) {
+        this.solicitacaoRecadastroAutorizada = solicitacaoRecadastroAutorizada;
+    }
+
+    public boolean isSolicitacaoRecadastroPendente() {
+        return solicitacaoRecadastroPendente;
+    }
+
+    public void setSolicitacaoRecadastroPendente(boolean solicitacaoRecadastroPendente) {
+        this.solicitacaoRecadastroPendente = solicitacaoRecadastroPendente;
     }
 
     public String getFotoPerfilPath() {

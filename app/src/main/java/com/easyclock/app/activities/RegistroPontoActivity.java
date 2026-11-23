@@ -443,26 +443,71 @@ public class RegistroPontoActivity extends AppCompatActivity {
         funcionarioDAO.buscarPorUid(uidFuncionario)
                 .addOnSuccessListener(func -> {
                     boolean jaCadastrado = func != null && func.isReconhecimentoFacialCadastrado();
+                    boolean autorizouRecadastro = func != null && func.isSolicitacaoRecadastroAutorizada();
 
-                    if (jaCadastrado) {
+                    if (jaCadastrado && !autorizouRecadastro) {
                         float[] storedEmbedding = ReconhecimentoFacialService.carregarTemplateBiometrico(this, uidFuncionario);
                         if (storedEmbedding == null) {
                             tempValidatedLocation = null;
                             tempValidatedLocRegistro = null;
-                            desbloquearPontoComAlerta("A referência biométrica do seu cadastro facial não foi encontrada neste dispositivo. Entre em contato com o RH para autorizar o recadastro.");
+                            desbloquearPontoComOpcaoSolicitacaoRecadastro(func);
                             return;
                         }
                     }
 
+                    boolean abrirEmModoCadastro = !jaCadastrado || autorizouRecadastro;
+
                     Intent intent = new Intent(RegistroPontoActivity.this, FaceIdActivity.class);
                     intent.putExtra("uidFuncionario", uidFuncionario);
-                    intent.putExtra("modoCadastro", !jaCadastrado);
+                    intent.putExtra("modoCadastro", abrirEmModoCadastro);
+                    intent.putExtra("isRecadastroAutorizado", autorizouRecadastro);
                     startActivityForResult(intent, REQUEST_CODE_FACE_ID);
                 })
                 .addOnFailureListener(e -> {
                     tempValidatedLocation = null;
                     tempValidatedLocRegistro = null;
                     desbloquearPontoComAlerta("Erro ao consultar dados biométricos do usuário: " + e.getLocalizedMessage());
+                });
+    }
+
+    private void desbloquearPontoComOpcaoSolicitacaoRecadastro(com.easyclock.app.model.Funcionario func) {
+        if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+        if (btnConfirmarPonto != null && !jornadaConcluidaHoje) btnConfirmarPonto.setEnabled(true);
+
+        boolean solicitacaoPendente = func != null && func.isSolicitacaoRecadastroPendente();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Atualização de Biometria Exigida (v2)");
+
+        if (solicitacaoPendente) {
+            builder.setMessage("Sua biometria facial v1 precisa ser atualizada. Sua solicitação já foi enviada e aguarda aprovação do RH da sua empresa.")
+                    .setPositiveButton("OK", null);
+        } else {
+            builder.setMessage("Seu cadastro facial precisa ser atualizado para a nova versão do reconhecimento (v2). Deseja enviar uma solicitação ao RH da sua empresa agora?")
+                    .setPositiveButton("SOLICITAR RECADASTRO", (dialog, which) -> enviarSolicitacaoRecadastro(func))
+                    .setNegativeButton("FECHAR", null);
+        }
+
+        builder.show();
+    }
+
+    private void enviarSolicitacaoRecadastro(com.easyclock.app.model.Funcionario func) {
+        if (func == null || func.getUid() == null || func.getEmpresaId() == null) {
+            Toast.makeText(this, "Dados insuficientes para enviar solicitação.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (progressBarPonto != null) progressBarPonto.setVisibility(View.VISIBLE);
+
+        com.easyclock.app.dao.SolicitacaoRecadastroDAO dao = new com.easyclock.app.dao.SolicitacaoRecadastroDAO();
+        dao.criarSolicitacao(func.getUid(), func.getEmpresaId(), func.getNome(), func.getEmail())
+                .addOnSuccessListener(unused -> {
+                    if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                    Toast.makeText(this, "Solicitação de recadastro facial enviada ao RH com sucesso!", Toast.LENGTH_LONG).show();
+                })
+                .addOnFailureListener(e -> {
+                    if (progressBarPonto != null) progressBarPonto.setVisibility(View.GONE);
+                    Toast.makeText(this, "Erro ao enviar solicitação: " + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 

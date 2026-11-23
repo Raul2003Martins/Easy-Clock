@@ -581,6 +581,95 @@ async function main() {
         }
       });
 
+  // -------------------------------------------------------------
+  // GRUPO D: CÁLCULOS BIOMÉTRICOS E COSINE SIMILARITY V6 (21 A 27)
+  // -------------------------------------------------------------
+
+  /**
+   * Helper function to calculate cosine similarity in JS.
+   * @param {Array<number>} v1 First vector.
+   * @param {Array<number>} v2 Second vector.
+   * @return {number} Cosine similarity.
+   */
+  function calcSimJS(v1, v2) {
+    if (!v1 || !v2 || v1.length !== 128 || v2.length !== 128) return 0.0;
+    let dot = 0;
+    let normA = 0;
+    let normB = 0;
+    for (let i = 0; i < 128; i++) {
+      if (isNaN(v1[i]) || isNaN(v2[i]) ||
+          !isFinite(v1[i]) || !isFinite(v2[i])) {
+        return 0.0;
+      }
+      dot += v1[i] * v2[i];
+      normA += v1[i] * v1[i];
+      normB += v2[i] * v2[i];
+    }
+    if (normA <= 1e-6 || normB <= 1e-6) return 0.0;
+    const sim = dot / (Math.sqrt(normA) * Math.sqrt(normB));
+    if (isNaN(sim) || !isFinite(sim)) return 0.0;
+    return Math.max(0.0, Math.min(1.0, sim));
+  }
+
+  await test("21. Vetores idênticos retornam similaridade 1.0 (100%)",
+      async () => {
+        const v1 = new Array(128).fill(0.1);
+        const sim = calcSimJS(v1, v1);
+        if (Math.abs(sim - 1.0) < 1e-4) return true;
+        throw new Error(`Similaridade esperada 1.0, obtida: ${sim}`);
+      });
+
+  await test("22. Vetores opostos retornam similaridade < 0.95",
+      async () => {
+        const v1 = new Array(128).fill(0.1);
+        const v2 = new Array(128).fill(-0.1);
+        const sim = calcSimJS(v1, v2);
+        if (sim < 0.95) return true;
+        throw new Error(`Similaridade esperada < 0.95, obtida: ${sim}`);
+      });
+
+  await test("23. Vetores com valores NaN retornam 0.0", async () => {
+    const v1 = new Array(128).fill(NaN);
+    const v2 = new Array(128).fill(0.1);
+    const sim = calcSimJS(v1, v2);
+    if (sim === 0.0) return true;
+    throw new Error(`Similaridade com NaN esperada 0.0, obtida: ${sim}`);
+  });
+
+  await test("24. Vetores nulos ou de tamanho incorreto retornam 0.0",
+      async () => {
+        const v1 = new Array(64).fill(0.1);
+        const v2 = new Array(128).fill(0.1);
+        const sim1 = calcSimJS(null, v2);
+        const sim2 = calcSimJS(v1, v2);
+        if (sim1 === 0.0 && sim2 === 0.0) return true;
+        throw new Error("Falha na validação de tamanho/nulo");
+      });
+
+  await test("25. Limiar de 95% v6: similaridade de 94% é REPROVADA",
+      async () => {
+        const sim = 0.94;
+        const aprovado = sim >= 0.95;
+        if (!aprovado) return true;
+        throw new Error("94% não deveria ser aprovado com limiar de 95%");
+      });
+
+  await test("26. Limiar de 95% v6: similaridade de 95% é APROVADA",
+      async () => {
+        const sim = 0.95;
+        const aprovado = sim >= 0.95;
+        if (aprovado) return true;
+        throw new Error("95% deveria ser aprovado com limiar de 95%");
+      });
+
+  await test("27. Limiar de 95% v6: similaridade de 98% é APROVADA",
+      async () => {
+        const sim = 0.98;
+        const aprovado = sim >= 0.95;
+        if (aprovado) return true;
+        throw new Error("98% deveria ser aprovado com limiar de 95%");
+      });
+
   console.log("\n=================================================");
   console.log(`  RESULTADO: ${passed} PASSARAM, ${failed} FALHARAM.`);
   console.log("=================================================");

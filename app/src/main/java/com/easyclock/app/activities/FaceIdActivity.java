@@ -312,6 +312,7 @@ public class FaceIdActivity extends AppCompatActivity {
 
         Map<String, Object> updateFunc = new HashMap<>();
         updateFunc.put("reconhecimentoFacialCadastrado", true);
+        updateFunc.put("solicitacaoRecadastroAutorizada", false);
         if (!fotoPath.isEmpty()) {
             updateFunc.put("fotoPerfilPath", fotoPath);
         }
@@ -364,7 +365,7 @@ public class FaceIdActivity extends AppCompatActivity {
             biometriaValidadaSucesso = true;
             if (btnBaterPontoFaceId != null) btnBaterPontoFaceId.setEnabled(true);
 
-            String msgStatus = String.format(Locale.getDefault(), "Reconhecimento facial aprovado com sucesso! (Similaridade: %.0f%%)", sim * 100.0f);
+            String msgStatus = String.format(Locale.getDefault(), "Reconhecimento facial aprovado com sucesso! (Similaridade: %.1f%%)", sim * 100.0f);
             if (tvStatusBiometriaDetalhado != null) tvStatusBiometriaDetalhado.setText(msgStatus);
 
             Toast.makeText(this, "Reconhecimento facial realizado com sucesso.", Toast.LENGTH_SHORT).show();
@@ -373,8 +374,8 @@ public class FaceIdActivity extends AppCompatActivity {
             if (btnBaterPontoFaceId != null) btnBaterPontoFaceId.setEnabled(false);
 
             String erroReprovado = String.format(Locale.getDefault(),
-                    "Não foi possível confirmar sua identidade. Similaridade calculada: %.0f%% (mínimo exigido: 75%%). Posicione seu rosto corretamente e tente novamente.",
-                    sim * 100.0f);
+                    "Reconhecimento facial não aprovado. A similaridade com o rosto cadastrado foi de %.1f%%, inferior ao mínimo exigido de %.0f%%.",
+                    sim * 100.0f, ReconhecimentoFacialService.LIMIAR_SIMILARIDADE_MINIMA * 100.0f);
 
             if (tvStatusBiometriaDetalhado != null) tvStatusBiometriaDetalhado.setText(erroReprovado);
 

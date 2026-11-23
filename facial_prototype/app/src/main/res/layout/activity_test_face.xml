@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/tvTitleTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PROTÓTIPO ANDROID — RECONHECIMENTO FACIAL MOBILEFACENET"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginBottom="12dp" />
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewViewTest"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pré-visualização da Imagem Processada (Input Tensor):"
+            android:textSize="12sp"
+            android:textStyle="italic"
+            android:layout_marginBottom="4dp" />
+
+        <ImageView
+            android:id="@+id/ivProcessedFacePreview"
+            android:layout_width="112dp"
+            android:layout_height="112dp"
+            android:background="#222222"
+            android:scaleType="fitCenter"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/tvStatusTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Câmera pronta. Escolha uma operação abaixo:"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnCadastrarRostoTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CADASTRAR ROSTO (TESTE)"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnValidarRostoTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="VALIDAR ROSTO (TESTE)"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnLimparCadastroTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LIMPAR CADASTRO (TESTE)"
+            android:backgroundTint="#D32F2F" />
+
+    </LinearLayout>
+</ScrollView>
