@@ -73,7 +73,16 @@ public class TestFaceActivity extends AppCompatActivity {
     private static final String TEMPLATE_FILE_NAME = "qualcomm_template.dat";
     private static final String GEOMETRIC_TEMPLATE_FILE_NAME = "qualcomm_geometric_template.dat";
     private static final int EMBEDDING_DIMENSION = 128;
-    private static final int GEOMETRIC_VECTOR_DIMENSION = 10;
+    private static final int GEOMETRIC_VECTOR_DIMENSION = 6;
+
+    // Limite de referência da Qualcomm AI Hub (mobile_facenet/model.py: DEFAULT_THRESHOLD = 74.18 graus).
+    // Mesma pessoa se o ângulo entre os embeddings for menor que isso (cosseno > ~0,27).
+    private static final float NEURAL_ANGLE_THRESHOLD_DEG = 74.18f;
+    // Tolerância da geometria (distância L2 entre vetores de razões normalizadas pela distância entre os olhos).
+    private static final float GEOMETRIC_DISTANCE_THRESHOLD = 0.12f;
+    // Pose máxima aceita no cadastro/validação: fora disso as medidas 2D deixam de ser comparáveis.
+    private static final float MAX_YAW_DEG = 15f;
+    private static final float MAX_PITCH_DEG = 15f;
 
     private enum ModoCaptura {
         NEURAL,
@@ -329,6 +338,17 @@ public class TestFaceActivity extends AppCompatActivity {
 
                     Face face = faces.get(0);
 
+                    float yaw = face.getHeadEulerAngleY();
+                    float pitch = face.getHeadEulerAngleX();
+                    if (Math.abs(yaw) > MAX_YAW_DEG || Math.abs(pitch) > MAX_PITCH_DEG) {
+                        String msg = String.format(Locale.getDefault(),
+                                "Rosto fora de posição (Yaw=%.1f°, Pitch=%.1f°). Olhe de frente para a câmera e tente novamente.",
+                                yaw, pitch);
+                        if (tvStatusTest != null) tvStatusTest.setText(msg);
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
                     // 1. Alinhamento Canônico Neural LIMPO (SEMPRE 100% LIMPO SEM PONTOS CIANOS)
                     Bitmap faceCrop = cropFace5LandmarksAligned(bitmap, face);
                     if (faceCrop == null) {
@@ -460,51 +480,51 @@ public class TestFaceActivity extends AppCompatActivity {
             return null;
         }
 
-        float lex = leftEye.getPosition().x;
-        float ley = leftEye.getPosition().y;
-        float rex = rightEye.getPosition().x;
-        float rey = rightEye.getPosition().y;
+        // Ordena os olhos pela posição na imagem (independe do espelhamento da câmera).
+        PointF a = leftEye.getPosition();
+        PointF b = rightEye.getPosition();
+        PointF eyeL = a.x <= b.x ? a : b;
+        PointF eyeR = a.x <= b.x ? b : a;
 
-        float eyeDx = rex - lex;
-        float eyeDy = rey - ley;
-        float dEyes = (float) Math.sqrt(eyeDx * eyeDx + eyeDy * eyeDy);
+        float eyeDx = eyeR.x - eyeL.x;
+        float eyeDy = eyeR.y - eyeL.y;
+        float dEyes = (float) Math.hypot(eyeDx, eyeDy);
         if (dEyes <= 1e-4f) return null;
 
-        Rect bounds = face.getBoundingBox();
-        float wFace = bounds.width();
-        float hFace = bounds.height();
+        // Referencial canônico: origem no meio dos olhos, eixo X ao longo da linha dos olhos,
+        // escala = distância entre os olhos. Remove translação, rotação (roll) e zoom.
+        // Não usa o bounding box do ML Kit, que varia bastante entre detecções.
+        float cx = (eyeL.x + eyeR.x) / 2f;
+        float cy = (eyeL.y + eyeR.y) / 2f;
+        float cos = eyeDx / dEyes;
+        float sin = eyeDy / dEyes;
 
-        float noseX = noseBase.getPosition().x;
-        float noseY = noseBase.getPosition().y;
+        float[] nose = toCanonical(noseBase.getPosition(), cx, cy, cos, sin, dEyes);
+        float[] m1 = toCanonical(mouthLeft.getPosition(), cx, cy, cos, sin, dEyes);
+        float[] m2 = toCanonical(mouthRight.getPosition(), cx, cy, cos, sin, dEyes);
+        float[] mL = m1[0] <= m2[0] ? m1 : m2;
+        float[] mR = m1[0] <= m2[0] ? m2 : m1;
+        float mouthMidY = (mL[1] + mR[1]) / 2f;
 
-        float mlX = mouthLeft.getPosition().x;
-        float mlY = mouthLeft.getPosition().y;
-        float mrX = mouthRight.getPosition().x;
-        float mrY = mouthRight.getPosition().y;
-
-        float mouthWidth = (float) Math.hypot(mrX - mlX, mrY - mlY);
-        float eyeCenterMidX = (lex + rex) / 2.0f;
-        float eyeCenterMidY = (ley + rey) / 2.0f;
-        float dEyeToNose = (float) Math.hypot(noseX - eyeCenterMidX, noseY - eyeCenterMidY);
-
-        float mouthMidX = (mlX + mrX) / 2.0f;
-        float mouthMidY = (mlY + mrY) / 2.0f;
-        float dNoseToMouth = (float) Math.hypot(mouthMidX - noseX, mouthMidY - noseY);
-        float dEyeToMouth = (float) Math.hypot(mouthMidX - eyeCenterMidX, mouthMidY - eyeCenterMidY);
-
+        // Só componentes verticais e larguras: deslocamentos horizontais dependem do yaw, não da identidade.
         float[] g = new float[GEOMETRIC_VECTOR_DIMENSION];
-        g[0] = dEyes / Math.max(1.0f, wFace);               // Inter-ocular / Largura facial
-        g[1] = dEyeToNose / dEyes;                         // Olho-ao-Nariz / Distância Inter-ocular
-        g[2] = dNoseToMouth / dEyes;                        // Nariz-à-Boca / Distância Inter-ocular
-        g[3] = mouthWidth / dEyes;                         // Largura da Boca / Distância Inter-ocular
-        g[4] = dEyeToMouth / dEyes;                        // Olho-à-Boca / Distância Inter-ocular
-        g[5] = wFace / Math.max(1.0f, hFace);              // Razão de Aspecto do Rosto
-        g[6] = Math.abs(noseX - eyeCenterMidX) / dEyes;    // Desvio de Simetria do Nariz
-        g[7] = Math.abs(mouthMidX - eyeCenterMidX) / dEyes;// Desvio de Simetria da Boca
-        g[8] = hFace / dEyes;                              // Altura Facial / Distância Inter-ocular
-        g[9] = (dEyeToNose + dNoseToMouth) / dEyes;        // Proporção Vertical Total
+        g[0] = nose[1];                                    // Olhos → nariz (vertical)
+        g[1] = mouthMidY;                                  // Olhos → boca (vertical)
+        g[2] = mouthMidY - nose[1];                        // Nariz → boca (vertical)
+        g[3] = mR[0] - mL[0];                              // Largura da boca
+        g[4] = (mouthMidY - nose[1]) / Math.max(1e-3f, nose[1]); // Proporção terço inferior / médio
+        g[5] = (mR[0] - mL[0]) / Math.max(1e-3f, mouthMidY);     // Largura da boca / altura olhos-boca
 
         return g;
+    }
+
+    private float[] toCanonical(PointF p, float cx, float cy, float cos, float sin, float scale) {
+        float dx = p.x - cx;
+        float dy = p.y - cy;
+        return new float[] {
+            ( dx * cos + dy * sin) / scale,
+            (-dx * sin + dy * cos) / scale
+        };
     }
 
     private Bitmap cropFace5LandmarksAligned(Bitmap src, Face face) {
@@ -651,42 +671,43 @@ public class TestFaceActivity extends AppCompatActivity {
             int width = scaled.getWidth();
             int height = scaled.getHeight();
 
-            int singleImageSize = 1 * 112 * 112 * 3 * 4;
+            int planeSize = width * height;
+            int singleImageSize = 1 * 3 * planeSize * 4;
 
             ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(singleImageSize);
             inputBuffer1.order(ByteOrder.nativeOrder());
-            inputBuffer1.rewind();
 
             ByteBuffer inputBuffer2 = ByteBuffer.allocateDirect(singleImageSize);
             inputBuffer2.order(ByteOrder.nativeOrder());
-            inputBuffer2.rewind();
 
-            int[] pixels = new int[width * height];
+            int[] pixels = new int[planeSize];
             scaled.getPixels(pixels, 0, width, 0, 0, width, height);
 
+            // O modelo (Qualcomm AI Hub MobileFaceNet) espera NCHW [1, 3, 112, 112], RGB em [0, 1].
+            // A normalização (mean/std) é feita dentro do próprio grafo do modelo.
+            // Layout planar: todo o canal R, depois todo o G, depois todo o B.
+            float[] chw = new float[3 * planeSize];
             float minVal1 = Float.MAX_VALUE, maxVal1 = -Float.MAX_VALUE, sumVal1 = 0f;
 
-            for (int pixel : pixels) {
-                int r = (pixel >> 16) & 0xFF;
-                int g = (pixel >> 8) & 0xFF;
-                int blue = pixel & 0xFF;
+            for (int i = 0; i < planeSize; i++) {
+                int pixel = pixels[i];
+                float rVal = ((pixel >> 16) & 0xFF) / 255.0f;
+                float gVal = ((pixel >> 8) & 0xFF) / 255.0f;
+                float bVal = (pixel & 0xFF) / 255.0f;
 
-                float rVal = r / 255.0f;
-                float gVal = g / 255.0f;
-                float bVal = blue / 255.0f;
+                chw[i] = rVal;
+                chw[planeSize + i] = gVal;
+                chw[2 * planeSize + i] = bVal;
 
                 minVal1 = Math.min(minVal1, Math.min(rVal, Math.min(gVal, bVal)));
                 maxVal1 = Math.max(maxVal1, Math.max(rVal, Math.max(gVal, bVal)));
                 sumVal1 += (rVal + gVal + bVal);
-
-                inputBuffer1.putFloat(rVal);
-                inputBuffer1.putFloat(gVal);
-                inputBuffer1.putFloat(bVal);
-
-                inputBuffer2.putFloat(rVal);
-                inputBuffer2.putFloat(gVal);
-                inputBuffer2.putFloat(bVal);
             }
+
+            inputBuffer1.asFloatBuffer().put(chw);
+            inputBuffer2.asFloatBuffer().put(chw);
+            inputBuffer1.rewind();
+            inputBuffer2.rewind();
 
             Log.d(TAG, String.format(Locale.getDefault(),
                     "Telemetria Tensor Input Qualcomm [0,1] -> Min: %.3f, Max: %.3f, Média Pixel: %.3f",
@@ -864,6 +885,9 @@ public class TestFaceActivity extends AppCompatActivity {
             normalizarVetorL2Padrão(vStoredStandard);
             normalizarVetorL2Padrão(vNovoStandard);
             float simStandard = calcularSimilaridadeCosseno(vStoredStandard, vNovoStandard);
+            float angleDeg = (float) Math.toDegrees(Math.acos(simStandard));
+            boolean neuralMatch = angleDeg < NEURAL_ANGLE_THRESHOLD_DEG;
+            float cosThreshold = (float) Math.cos(Math.toRadians(NEURAL_ANGLE_THRESHOLD_DEG));
 
             // Análise da Telemetria Geométrica e Ângulos de Cabeça
             float eulerX = face != null ? face.getHeadEulerAngleX() : 0.0f; // Pitch (Incli. Vertical)
@@ -871,6 +895,7 @@ public class TestFaceActivity extends AppCompatActivity {
             float eulerZ = face != null ? face.getHeadEulerAngleZ() : 0.0f; // Roll (Incli. Rotação)
 
             String geomReportStr = "Geometria Não Cadastrada";
+            Boolean geomMatch = null;
             float maxGeomDiff = 0.0f;
             int maxGeomFeatureIdx = -1;
 
@@ -893,9 +918,13 @@ public class TestFaceActivity extends AppCompatActivity {
                             distGeomSq += diff * diff;
                         }
                         float distGeom = (float) Math.sqrt(distGeomSq);
+                        geomMatch = distGeom < GEOMETRIC_DISTANCE_THRESHOLD;
                         geomReportStr = String.format(Locale.getDefault(),
-                                "Distância L2 Geométrica: %.4f\n• Maior Δ Recurso [g%d]: %.4f",
-                                distGeom, maxGeomFeatureIdx, maxGeomDiff);
+                                "Distância L2 Geométrica: %.4f (limite %.2f) → %s\n• Maior Δ Recurso [g%d]: %.4f",
+                                distGeom, GEOMETRIC_DISTANCE_THRESHOLD, geomMatch ? "COMPATÍVEL" : "DIVERGENTE",
+                                maxGeomFeatureIdx, maxGeomDiff);
+                    } else {
+                        geomReportStr = "Template geométrico de versão antiga. Cadastre a geometria novamente.";
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Erro ao carregar template geométrico", e);
@@ -904,18 +933,27 @@ public class TestFaceActivity extends AppCompatActivity {
 
             String timeStr = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
+            String veredito = neuralMatch ? "✅ MESMA PESSOA" : "❌ PESSOA DIFERENTE";
+            if (neuralMatch && Boolean.FALSE.equals(geomMatch)) {
+                veredito += " (geometria divergente — confira a captura)";
+            }
+
             String resultStr = String.format(Locale.getDefault(),
+                    "VEREDITO: %s\n\n" +
                     "--- ANÁLISE NEURAL — MOBILEFACENET [%s] ---\n" +
                     "• SHA-256 Template: %s... (%s)\n" +
-                    "• L2 Padrão Cosseno: %.6f (%.2f%%)\n\n" +
+                    "• Cosseno: %.4f (limite > %.4f)\n" +
+                    "• Ângulo: %.2f° (limite < %.2f°)\n\n" +
                     "--- ANÁLISE GEOMÉTRICA & POSTURA (133 PONTOS) ---\n" +
                     "• Ângulos Pose: Pitch=%.1f°, Yaw=%.1f°, Roll=%.1f°\n" +
                     "• Contornos: %d pontos (%s)\n" +
                     "• %s",
+                    veredito,
                     timeStr,
                     hashAntes.substring(0, 10),
                     isIntegrityVerified ? "Imutável" : "ALERTA",
-                    simStandard, simStandard * 100.0f,
+                    simStandard, cosThreshold,
+                    angleDeg, NEURAL_ANGLE_THRESHOLD_DEG,
                     eulerX, eulerY, eulerZ,
                     contourPointsCount, contourPointsCount >= 100 ? "COMPLETA" : "INCOMPLETA",
                     geomReportStr);
