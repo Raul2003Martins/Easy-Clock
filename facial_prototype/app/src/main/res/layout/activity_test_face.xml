@@ -15,31 +15,95 @@
             android:id="@+id/tvTitleTest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="PROTÓTIPO ANDROID — RECONHECIMENTO FACIAL MOBILEFACENET"
+            android:text="PROTÓTIPO ANDROID — ANÁLISE NEURAL E GEOMÉTRICA (133 PONTOS)"
             android:textStyle="bold"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:gravity="center"
             android:layout_marginBottom="12dp" />
 
         <androidx.camera.view.PreviewView
             android:id="@+id/previewViewTest"
-            android:layout_width="240dp"
-            android:layout_height="240dp"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
             android:layout_marginBottom="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pré-visualização da Imagem Processada (Input Tensor):"
+            android:text="Recortes Neurais Limpos 112x112 (Sem Overlay):"
             android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rosto Cadastrado Fixo:"
+                    android:textSize="11sp"
+                    android:textStyle="italic"
+                    android:layout_marginBottom="4dp" />
+
+                <ImageView
+                    android:id="@+id/ivRegisteredFacePreview"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="#222222"
+                    android:scaleType="fitCenter" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Última Validação:"
+                    android:textSize="11sp"
+                    android:textStyle="italic"
+                    android:layout_marginBottom="4dp" />
+
+                <ImageView
+                    android:id="@+id/ivLastValidatedFacePreview"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="#222222"
+                    android:scaleType="fitCenter" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Diagnóstico Visual dos Contornos (133 Pontos):"
+            android:textSize="11sp"
             android:textStyle="italic"
             android:layout_marginBottom="4dp" />
 
         <ImageView
-            android:id="@+id/ivProcessedFacePreview"
-            android:layout_width="112dp"
-            android:layout_height="112dp"
-            android:background="#222222"
+            android:id="@+id/ivContourOverlayPreview"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="#111111"
             android:scaleType="fitCenter"
             android:layout_marginBottom="12dp" />
 
@@ -48,7 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Câmera pronta. Escolha uma operação abaixo:"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
@@ -56,21 +120,28 @@
             android:id="@+id/btnCadastrarRostoTest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CADASTRAR ROSTO (TESTE)"
+            android:text="1. CADASTRAR NEURAL — MOBILEFACENET"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnCadastrarGeometriaTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2. CADASTRAR GEOMETRIA — 133 PONTOS"
             android:layout_marginBottom="8dp" />
 
         <Button
             android:id="@+id/btnValidarRostoTest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="VALIDAR ROSTO (TESTE)"
+            android:text="3. VALIDAR NEURAL &amp; GEOMETRIA (TESTE)"
             android:layout_marginBottom="8dp" />
 
         <Button
             android:id="@+id/btnLimparCadastroTest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="LIMPAR CADASTRO (TESTE)"
+            android:text="LIMPAR CADASTROS DE TESTE"
             android:backgroundTint="#D32F2F" />
 
     </LinearLayout>
