@@ -1,14 +1,11 @@
 package com.easyclock.app.service;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.Log;
 
 import com.easyclock.app.model.BiometricTemplate;
@@ -19,35 +16,86 @@ import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.face.FaceLandmark;
 
+import org.tensorflow.lite.Interpreter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Locale;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReconhecimentoFacialService {
 
     private static final String TAG = "EasyClockFaceID";
-    public static final float LIMIAR_SIMILARIDADE_MINIMA = 0.95f; // 95% de similaridade mínima obrigatória com fundo neutralizado
+    private static final String MODEL_FILE_NAME = "mobilefacenet.tflite";
+
     public static final int EMBEDDING_DIMENSION = 128;
-    public static final int VERSAO_EMBEDDING_ATUAL = 6; // Biometria v6 (Isolamento de Rosto & Neutralização de Fundo)
+    public static final int VERSAO_EMBEDDING_QUALCOMM = 7;
+
+    // Novo Limite Neural de Aceitação: Cosseno mínimo de 0.80 (80.0%)
+    public static final float LIMIAR_SIMILARIDADE_MINIMA = 0.80f;
+
+    private static Interpreter tfliteInterpreter;
+    private static boolean isModelLoaded = false;
+    private static String lastModelError = null;
 
     public interface OnAnaliseFacialListener {
         void onSuccess(Bitmap faceCrop, float[] embedding);
         void onFailure(String mensagemErro);
     }
 
-    public static void analisarEExtrairBiometria(Bitmap bitmap, OnAnaliseFacialListener listener) {
+    public static boolean validarAprovacaoSimilaridade(float sim) {
+        return Float.isFinite(sim) && sim >= LIMIAR_SIMILARIDADE_MINIMA;
+    }
+
+    private static synchronized void garantirModeloCarregado(Context context) {
+        if (isModelLoaded && tfliteInterpreter != null) return;
+
+        try {
+            AssetFileDescriptor fileDescriptor = context.getAssets().openFd(MODEL_FILE_NAME);
+            FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+            FileChannel fileChannel = inputStream.getChannel();
+            long startOffset = fileDescriptor.getStartOffset();
+            long declaredLength = fileDescriptor.getDeclaredLength();
+            MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+
+            Interpreter.Options options = new Interpreter.Options();
+            options.setNumThreads(4);
+            tfliteInterpreter = new Interpreter(mappedByteBuffer, options);
+
+            isModelLoaded = true;
+            lastModelError = null;
+            Log.d(TAG, "Modelo Qualcomm MobileFaceNet NCHW TFLite carregado com sucesso na aplicação principal.");
+        } catch (Exception e) {
+            Log.e(TAG, "Erro crítico ao carregar modelo TFLite na aplicação principal", e);
+            isModelLoaded = false;
+            tfliteInterpreter = null;
+            lastModelError = e.getClass().getSimpleName() + ": " + e.getMessage();
+        }
+    }
+
+    public static void analisarEExtrairBiometria(Context context, Bitmap bitmap, OnAnaliseFacialListener listener) {
         if (bitmap == null || listener == null) {
             if (listener != null) listener.onFailure("Imagem da câmera não disponível.");
+            return;
+        }
+
+        garantirModeloCarregado(context);
+        if (!isModelLoaded || tfliteInterpreter == null) {
+            listener.onFailure("Erro ao inicializar o motor de reconhecimento neural TFLite: " +
+                    (lastModelError != null ? lastModelError : "Modelo indisponível"));
             return;
         }
 
         FaceDetectorOptions options = new FaceDetectorOptions.Builder()
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
                 .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
-                .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
                 .setMinFaceSize(0.15f)
                 .build();
 
@@ -57,77 +105,42 @@ public class ReconhecimentoFacialService {
         detector.process(image)
                 .addOnSuccessListener(faces -> {
                     if (faces == null || faces.isEmpty()) {
-                        Log.d(TAG, String.format(Locale.US, "Detecção falhou: 0 rostos em img %dx%d", bitmap.getWidth(), bitmap.getHeight()));
                         listener.onFailure("Nenhum rosto identificado. Posicione seu rosto dentro da câmera.");
                         return;
                     }
 
                     if (faces.size() > 1) {
-                        Log.d(TAG, String.format(Locale.US, "Detecção recusada: %d rostos encontrados", faces.size()));
                         listener.onFailure("Mais de um rosto detectado. Por favor, certifique-se de estar sozinho na câmera.");
                         return;
                     }
 
                     Face face = faces.get(0);
-                    Rect bounds = face.getBoundingBox();
 
-                    // Validação de Posição da Cabeça (Euler Angles)
-                    float rotX = face.getHeadEulerAngleX(); // Inclinação vertical
-                    float rotY = face.getHeadEulerAngleY(); // Guinada horizontal
-                    float rotZ = face.getHeadEulerAngleZ(); // Inclinação lateral
+                    // Validação de Pose da Cabeça
+                    float rotX = face.getHeadEulerAngleX();
+                    float rotY = face.getHeadEulerAngleY();
+                    float rotZ = face.getHeadEulerAngleZ();
 
-                    Log.d(TAG, String.format(Locale.US,
-                            "Face Detectada v6: imgW=%d, imgH=%d, rotY=%.1f, rotZ=%.1f, rotX=%.1f, bounds=[%d,%d,%d,%d], size=%dx%d",
-                            bitmap.getWidth(), bitmap.getHeight(), rotY, rotZ, rotX,
-                            bounds.left, bounds.top, bounds.right, bounds.bottom, bounds.width(), bounds.height()));
-
-                    if (Math.abs(rotY) > 30.0f) {
-                        listener.onFailure("Olhe diretamente para a câmera sem virar o rosto para os lados.");
+                    if (Math.abs(rotY) > 20.0f || Math.abs(rotZ) > 20.0f || Math.abs(rotX) > 20.0f) {
+                        listener.onFailure("Olhe diretamente para a câmera sem virar ou inclinar a cabeça.");
                         return;
                     }
 
-                    if (Math.abs(rotZ) > 30.0f) {
-                        listener.onFailure("Mantenha a cabeça reta, sem inclinar para o ombro.");
+                    // Alinhamento Canônico de 5 Landmarks Faciais
+                    Bitmap faceCrop = cropFace5LandmarksAligned(bitmap, face);
+                    if (faceCrop == null) {
+                        listener.onFailure("Não foi possível identificar todos os 5 pontos faciais. Centralize o rosto e tente novamente.");
                         return;
                     }
 
-                    if (Math.abs(rotX) > 30.0f) {
-                        listener.onFailure("Mantenha a cabeça e o olhar nivelados com a câmera.");
-                        return;
-                    }
-
-                    int faceWidth = bounds.width();
-                    int faceHeight = bounds.height();
-                    int imgWidth = bitmap.getWidth();
-                    int imgHeight = bitmap.getHeight();
-
-                    if (faceWidth < (imgWidth * 0.15f) || faceHeight < (imgHeight * 0.15f)) {
-                        listener.onFailure("Aproxime um pouco mais o rosto da câmera.");
-                        return;
-                    }
-
-                    int maxBoundaryExceed = 30;
-                    if (bounds.left < -maxBoundaryExceed || bounds.top < -maxBoundaryExceed ||
-                            bounds.right > imgWidth + maxBoundaryExceed || bounds.bottom > imgHeight + maxBoundaryExceed) {
-                        listener.onFailure("Centralize seu rosto dentro da área indicada.");
-                        return;
-                    }
-
-                    // Isolamento de Rosto & Neutralização Total do Fundo (Máscara Elíptica Anatómicamente Alinhada)
-                    Bitmap faceMasked = isolarEProcessarApenasRosto(bitmap, face);
-                    if (faceMasked == null) {
-                        listener.onFailure("Erro ao isolar a anatomia do rosto. Tente novamente.");
-                        return;
-                    }
-
-                    // Extração de Vetor de Características Biométricas da Face Isolada (128-d)
-                    float[] embedding = extrairEmbeddingFacial(face, faceMasked);
+                    // Extração de Embedding Neural NCHW Float32 [0.0, 1.0]
+                    float[] embedding = extrairEmbeddingMobileFaceNetNCHW(faceCrop);
                     if (embedding == null || contemValoresInvalidos(embedding)) {
-                        listener.onFailure("Falha ao gerar o vetor biométrico. Tente novamente com boa iluminação.");
+                        listener.onFailure("Falha ao gerar o vetor biométrico neural. Tente novamente com boa iluminação.");
                         return;
                     }
 
-                    listener.onSuccess(faceMasked, embedding);
+                    listener.onSuccess(faceCrop, embedding);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Erro na detecção facial ML Kit", e);
@@ -135,235 +148,240 @@ public class ReconhecimentoFacialService {
                 });
     }
 
-    private static Bitmap isolarEProcessarApenasRosto(Bitmap src, Face face) {
+    private static Bitmap cropFace5LandmarksAligned(Bitmap src, Face face) {
         if (src == null || face == null) return null;
 
-        Rect bounds = face.getBoundingBox();
         FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);
         FaceLandmark rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE);
+        FaceLandmark noseBase = face.getLandmark(FaceLandmark.NOSE_BASE);
+        FaceLandmark mouthLeft = face.getLandmark(FaceLandmark.MOUTH_LEFT);
+        FaceLandmark mouthRight = face.getLandmark(FaceLandmark.MOUTH_RIGHT);
 
-        // 1. Alinhamento Ocular (Correção de Rotação/Inclinação)
-        Bitmap srcRotated = src;
-        if (leftEye != null && rightEye != null) {
-            float dx = rightEye.getPosition().x - leftEye.getPosition().x;
-            float dy = rightEye.getPosition().y - leftEye.getPosition().y;
-            double angleDeg = Math.toDegrees(Math.atan2(dy, dx));
-
-            if (Math.abs(angleDeg) > 1.0) {
-                Matrix matrix = new Matrix();
-                float eyeMidX = (leftEye.getPosition().x + rightEye.getPosition().x) / 2.0f;
-                float eyeMidY = (leftEye.getPosition().y + rightEye.getPosition().y) / 2.0f;
-                matrix.postRotate((float) angleDeg, eyeMidX, eyeMidY);
-
-                try {
-                    srcRotated = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
-                } catch (Exception e) {
-                    Log.e(TAG, "Erro ao rotacionar imagem pelos olhos", e);
-                }
-            }
-        }
-
-        // 2. Recorte Justo do Rosto
-        int x1 = Math.max(0, bounds.left);
-        int y1 = Math.max(0, bounds.top);
-        int w = Math.min(srcRotated.getWidth() - x1, bounds.width());
-        int h = Math.min(srcRotated.getHeight() - y1, bounds.height());
-
-        if (w <= 20 || h <= 20) return null;
-
-        Bitmap croppedFace;
-        try {
-            croppedFace = Bitmap.createBitmap(srcRotated, x1, y1, w, h);
-        } catch (Exception e) {
+        if (leftEye == null || rightEye == null || noseBase == null || mouthLeft == null || mouthRight == null) {
             return null;
         }
 
-        // 3. Aplicação de Máscara Elíptica de Remoção de Fundo
-        // Cria um bitmap do mesmo tamanho preenchendo o fundo com PRETO NEUTRO (RGB 0,0,0)
-        Bitmap maskedFace = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(maskedFace);
-        canvas.drawColor(Color.BLACK); // Preenche 100% do fundo com preto neutro
+        float p1_x = leftEye.getPosition().x;
+        float p1_y = leftEye.getPosition().y;
+        float p2_x = rightEye.getPosition().x;
+        float p2_y = rightEye.getPosition().y;
 
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Path path = new Path();
+        float pLeftX = Math.min(p1_x, p2_x);
+        float pLeftY = (pLeftX == p1_x) ? p1_y : p2_y;
+        float pRightX = Math.max(p1_x, p2_x);
+        float pRightY = (pRightX == p2_x) ? p2_y : p1_y;
 
-        // Delimita a elipse contendo APENAS a anatomia do rosto
-        RectF ovalBounds = new RectF(
-                w * 0.05f,
-                h * 0.02f,
-                w * 0.95f,
-                h * 0.98f
-        );
-        path.addOval(ovalBounds, Path.Direction.CW);
+        float m1_x = mouthLeft.getPosition().x;
+        float m1_y = mouthLeft.getPosition().y;
+        float m2_x = mouthRight.getPosition().x;
+        float m2_y = mouthRight.getPosition().y;
 
-        canvas.clipPath(path);
-        canvas.drawBitmap(croppedFace, 0, 0, paint);
+        float pMouthLeftX = Math.min(m1_x, m2_x);
+        float pMouthLeftY = (pMouthLeftX == m1_x) ? m1_y : m2_y;
+        float pMouthRightX = Math.max(m1_x, m2_x);
+        float pMouthRightY = (pMouthRightX == m2_x) ? m2_y : m1_y;
 
-        return maskedFace;
+        float[][] srcPts = new float[][] {
+            { pLeftX, pLeftY },
+            { pRightX, pRightY },
+            { noseBase.getPosition().x, noseBase.getPosition().y },
+            { pMouthLeftX, pMouthLeftY },
+            { pMouthRightX, pMouthRightY }
+        };
+
+        float[][] dstPts = new float[][] {
+            { 38.2943f, 51.6963f }, // Olho Esquerdo
+            { 73.5318f, 51.6963f }, // Olho Direito
+            { 56.0252f, 71.7366f }, // Base do Nariz
+            { 41.5493f, 92.3655f }, // Canto Esquerdo da Boca
+            { 70.7299f, 92.3655f }  // Canto Direito da Boca
+        };
+
+        float[] transformParams = computeLeastSquaresSimilarityMatrix(srcPts, dstPts);
+        if (transformParams == null) return null;
+
+        float a = transformParams[0];
+        float b = transformParams[1];
+        float tx = transformParams[2];
+        float ty = transformParams[3];
+
+        float scaleSq = a * a + b * b;
+        if (scaleSq <= 1e-8f || Float.isNaN(scaleSq)) return null;
+
+        Matrix transform = new Matrix();
+        transform.setValues(new float[] {
+            a, -b, tx,
+            b,  a, ty,
+            0,  0,  1
+        });
+
+        try {
+            Bitmap aligned112 = Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(aligned112);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+            canvas.drawBitmap(src, transform, paint);
+            return aligned112;
+        } catch (Exception e) {
+            Log.e(TAG, "Erro ao alinhar face por 5 landmarks", e);
+            return null;
+        }
     }
 
-    public static float[] extrairEmbeddingFacial(Face face, Bitmap faceCrop) {
-        if (faceCrop == null) return null;
+    private static float[] computeLeastSquaresSimilarityMatrix(float[][] srcPts, float[][] dstPts) {
+        try {
+            float[][] ATA = new float[4][4];
+            float[] ATb = new float[4];
 
-        float[] vector = new float[EMBEDDING_DIMENSION];
+            for (int i = 0; i < 5; i++) {
+                float x = srcPts[i][0];
+                float y = srcPts[i][1];
+                float u = dstPts[i][0];
+                float v = dstPts[i][1];
 
-        // 1. Extração baseada em pontos anatômicos ML Kit
-        FaceLandmark leftEye = face != null ? face.getLandmark(FaceLandmark.LEFT_EYE) : null;
-        FaceLandmark rightEye = face != null ? face.getLandmark(FaceLandmark.RIGHT_EYE) : null;
-        FaceLandmark nose = face != null ? face.getLandmark(FaceLandmark.NOSE_BASE) : null;
-        FaceLandmark mouthLeft = face != null ? face.getLandmark(FaceLandmark.MOUTH_LEFT) : null;
-        FaceLandmark mouthRight = face != null ? face.getLandmark(FaceLandmark.MOUTH_RIGHT) : null;
+                float[] row1 = new float[] { x, -y, 1f, 0f };
+                float[] row2 = new float[] { y,  x, 0f, 1f };
 
-        float interEyeDist = 1.0f;
-        if (leftEye != null && rightEye != null) {
-            float dx = rightEye.getPosition().x - leftEye.getPosition().x;
-            float dy = rightEye.getPosition().y - leftEye.getPosition().y;
-            interEyeDist = (float) Math.sqrt(dx * dx + dy * dy);
-            if (interEyeDist < 1.0f) interEyeDist = 1.0f;
-        }
-
-        int idx = 0;
-        if (leftEye != null && rightEye != null) {
-            vector[idx++] = (rightEye.getPosition().x - leftEye.getPosition().x) / interEyeDist;
-            vector[idx++] = (rightEye.getPosition().y - leftEye.getPosition().y) / interEyeDist;
-        } else {
-            vector[idx++] = 0.0f;
-            vector[idx++] = 0.0f;
-        }
-
-        if (nose != null && leftEye != null) {
-            vector[idx++] = (nose.getPosition().x - leftEye.getPosition().x) / interEyeDist;
-            vector[idx++] = (nose.getPosition().y - leftEye.getPosition().y) / interEyeDist;
-        } else {
-            vector[idx++] = 0.0f;
-            vector[idx++] = 0.0f;
-        }
-
-        if (mouthLeft != null && mouthRight != null) {
-            vector[idx++] = (mouthRight.getPosition().x - mouthLeft.getPosition().x) / interEyeDist;
-            vector[idx++] = (mouthRight.getPosition().y - mouthLeft.getPosition().y) / interEyeDist;
-        } else {
-            vector[idx++] = 0.0f;
-            vector[idx++] = 0.0f;
-        }
-
-        // 2. Extração espacial de textura e intensidades da Face Isolada (Grade 16x16)
-        Bitmap scaled = Bitmap.createScaledBitmap(faceCrop, 16, 16, false);
-        int w = scaled.getWidth();
-        int h = scaled.getHeight();
-        float sumGray = 0.0f;
-        float[] rawGrays = new float[w * h];
-
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int pixel = scaled.getPixel(x, y);
-                int r = (pixel >> 16) & 0xff;
-                int g = (pixel >> 8) & 0xff;
-                int b = pixel & 0xff;
-                float gray = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f;
-                rawGrays[y * w + x] = gray;
-                sumGray += gray;
+                for (int r = 0; r < 4; r++) {
+                    ATb[r] += row1[r] * u + row2[r] * v;
+                    for (int c = 0; c < 4; c++) {
+                        ATA[r][c] += row1[r] * row1[c] + row2[r] * row2[c];
+                    }
+                }
             }
-        }
 
-        // Normalização de Contraste na Face Isolada
-        float meanGray = sumGray / (w * h);
-
-        for (int y = 0; y < 16 && idx < EMBEDDING_DIMENSION; y++) {
-            for (int x = 0; x < 16 && idx < EMBEDDING_DIMENSION; x++) {
-                float val = rawGrays[y * w + x] - meanGray;
-                vector[idx++] = val;
+            float[][] M = new float[4][5];
+            for (int i = 0; i < 4; i++) {
+                System.arraycopy(ATA[i], 0, M[i], 0, 4);
+                M[i][4] = ATb[i];
             }
-        }
 
-        while (idx < EMBEDDING_DIMENSION) {
-            vector[idx] = 0.0f;
-            idx++;
-        }
+            for (int i = 0; i < 4; i++) {
+                float pivot = M[i][i];
+                if (Math.abs(pivot) < 1e-6f) return null;
+                for (int j = i; j <= 4; j++) M[i][j] /= pivot;
+                for (int k = 0; k < 4; k++) {
+                    if (k != i) {
+                        float factor = M[k][i];
+                        for (int j = i; j <= 4; j++) M[k][j] -= factor * M[i][j];
+                    }
+                }
+            }
 
-        normalizarVetor(vector);
-        return vector;
+            return new float[] { M[0][4], M[1][4], M[2][4], M[3][4] };
+        } catch (Exception e) {
+            Log.e(TAG, "Erro na matriz de mínimos quadrados 5 pontos", e);
+            return null;
+        }
     }
 
-    private static void normalizarVetor(float[] vector) {
-        if (vector == null) return;
-        float sumSquares = 0.0f;
-        for (float val : vector) {
-            if (!Float.isNaN(val) && !Float.isInfinite(val)) {
-                sumSquares += val * val;
+    private static float[] extrairEmbeddingMobileFaceNetNCHW(Bitmap faceCrop) {
+        if (faceCrop == null || tfliteInterpreter == null) return null;
+
+        try {
+            Bitmap scaled = Bitmap.createScaledBitmap(faceCrop, 112, 112, true);
+            int width = scaled.getWidth();
+            int height = scaled.getHeight();
+
+            int planeSize = width * height;
+            int singleImageSize = 3 * planeSize * 4;
+
+            ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(singleImageSize);
+            inputBuffer1.order(ByteOrder.nativeOrder());
+
+            ByteBuffer inputBuffer2 = ByteBuffer.allocateDirect(singleImageSize);
+            inputBuffer2.order(ByteOrder.nativeOrder());
+
+            int[] pixels = new int[planeSize];
+            scaled.getPixels(pixels, 0, width, 0, 0, width, height);
+
+            // Layout Planar NCHW [1, 3, 112, 112], RGB em [0.0, 1.0]
+            float[] chw = new float[3 * planeSize];
+
+            for (int i = 0; i < planeSize; i++) {
+                int pixel = pixels[i];
+                float rVal = ((pixel >> 16) & 0xFF) / 255.0f;
+                float gVal = ((pixel >> 8) & 0xFF) / 255.0f;
+                float bVal = (pixel & 0xFF) / 255.0f;
+
+                chw[i] = rVal;
+                chw[planeSize + i] = gVal;
+                chw[2 * planeSize + i] = bVal;
             }
-        }
-        float norm = (float) Math.sqrt(sumSquares);
-        if (norm > 1e-6f) {
-            for (int i = 0; i < vector.length; i++) {
-                vector[i] /= norm;
+
+            inputBuffer1.asFloatBuffer().put(chw);
+            inputBuffer2.asFloatBuffer().put(chw);
+            inputBuffer1.rewind();
+            inputBuffer2.rewind();
+
+            Object[] inputs = new Object[] { inputBuffer1, inputBuffer2 };
+
+            float[][] outputBuffer = new float[2][EMBEDDING_DIMENSION];
+            Map<Integer, Object> outputs = new HashMap<>();
+            outputs.put(0, outputBuffer);
+
+            synchronized (ReconhecimentoFacialService.class) {
+                tfliteInterpreter.runForMultipleInputsOutputs(inputs, outputs);
             }
+
+            return outputBuffer[0].clone();
+        } catch (Exception e) {
+            Log.e(TAG, "Erro crítico na inferência neural TFLite MobileFaceNet NCHW", e);
+            return null;
         }
     }
 
     public static boolean contemValoresInvalidos(float[] vector) {
         if (vector == null || vector.length != EMBEDDING_DIMENSION) return true;
         for (float val : vector) {
-            if (Float.isNaN(val) || Float.isInfinite(val)) {
-                return true;
-            }
+            if (Float.isNaN(val) || Float.isInfinite(val)) return true;
         }
         return false;
     }
 
     public static float calcularSimilaridadeCosseno(float[] v1, float[] v2) {
-        if (v1 == null || v2 == null) return 0.0f;
-        if (v1.length != EMBEDDING_DIMENSION || v2.length != EMBEDDING_DIMENSION) return 0.0f;
-        if (contemValoresInvalidos(v1) || contemValoresInvalidos(v2)) return 0.0f;
+        if (v1 == null || v2 == null || v1.length != v2.length) return 0.0f;
 
-        float dotProduct = 0.0f;
+        float dot = 0.0f;
         float normA = 0.0f;
         float normB = 0.0f;
 
-        for (int i = 0; i < EMBEDDING_DIMENSION; i++) {
-            dotProduct += v1[i] * v2[i];
+        for (int i = 0; i < v1.length; i++) {
+            dot += v1[i] * v2[i];
             normA += v1[i] * v1[i];
             normB += v2[i] * v2[i];
         }
 
         if (normA <= 1e-6f || normB <= 1e-6f) return 0.0f;
-
-        float sim = dotProduct / ((float) Math.sqrt(normA) * (float) Math.sqrt(normB));
-        if (Float.isNaN(sim) || Float.isInfinite(sim)) return 0.0f;
-
-        return Math.max(0.0f, Math.min(1.0f, sim));
+        float sim = dot / ((float) Math.sqrt(normA) * (float) Math.sqrt(normB));
+        return Math.max(-1.0f, Math.min(1.0f, sim));
     }
 
     public static boolean salvarTemplateBiometrico(Context context, String uid, float[] embedding, Bitmap faceCrop) {
-        if (context == null || uid == null || uid.trim().isEmpty() || embedding == null || contemValoresInvalidos(embedding)) return false;
+        if (context == null || uid == null || uid.trim().isEmpty() || embedding == null) return false;
 
         try {
-            File dirBio = new File(context.getFilesDir(), "biometrics");
-            if (!dirBio.exists()) dirBio.mkdirs();
+            File dir = new File(context.getFilesDir(), "biometrics");
+            if (!dir.exists()) dir.mkdirs();
 
-            File fileBio = new File(dirBio, uid.trim() + ".dat");
-            FileOutputStream fos = new FileOutputStream(fileBio);
+            BiometricTemplate template = new BiometricTemplate(VERSAO_EMBEDDING_QUALCOMM, embedding, uid, System.currentTimeMillis());
+
+            File datFile = new File(dir, uid + ".dat");
+            FileOutputStream fos = new FileOutputStream(datFile);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-            BiometricTemplate templateObj = new BiometricTemplate(VERSAO_EMBEDDING_ATUAL, embedding, uid.trim(), System.currentTimeMillis());
-            oos.writeObject(templateObj);
-
+            oos.writeObject(template);
             oos.close();
             fos.close();
 
             if (faceCrop != null) {
-                File dirImg = new File(context.getFilesDir(), "profile");
-                if (!dirImg.exists()) dirImg.mkdirs();
-
-                File fileImg = new File(dirImg, uid.trim() + ".jpg");
-                FileOutputStream fosImg = new FileOutputStream(fileImg);
-                faceCrop.compress(Bitmap.CompressFormat.JPEG, 90, fosImg);
-                fosImg.close();
+                File profileFile = new File(dir, uid + "_profile.png");
+                FileOutputStream imgFos = new FileOutputStream(profileFile);
+                faceCrop.compress(Bitmap.CompressFormat.PNG, 100, imgFos);
+                imgFos.close();
             }
 
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "Erro ao salvar template biométrico local v6", e);
+            Log.e(TAG, "Erro ao salvar template biométrico local do usuário " + uid, e);
             return false;
         }
     }
@@ -372,38 +390,31 @@ public class ReconhecimentoFacialService {
         if (context == null || uid == null || uid.trim().isEmpty()) return null;
 
         try {
-            File fileBio = new File(new File(context.getFilesDir(), "biometrics"), uid.trim() + ".dat");
-            if (!fileBio.exists()) return null;
+            File datFile = new File(new File(context.getFilesDir(), "biometrics"), uid + ".dat");
+            if (!datFile.exists()) return null;
 
-            FileInputStream fis = new FileInputStream(fileBio);
+            FileInputStream fis = new FileInputStream(datFile);
             ObjectInputStream ois = new ObjectInputStream(fis);
-            Object obj = ois.readObject();
+            BiometricTemplate template = (BiometricTemplate) ois.readObject();
             ois.close();
             fis.close();
 
-            if (obj instanceof BiometricTemplate) {
-                BiometricTemplate tpl = (BiometricTemplate) obj;
-                if (tpl.getVersao() != VERSAO_EMBEDDING_ATUAL) {
-                    Log.w(TAG, "Versão de biometria incompatível em disco (" + tpl.getVersao() + " != " + VERSAO_EMBEDDING_ATUAL + "). Recadastro v6 exigido.");
-                    return null;
-                }
-                float[] emb = tpl.getEmbedding();
-                return contemValoresInvalidos(emb) ? null : emb;
-            } else if (obj instanceof float[]) {
-                Log.w(TAG, "Versão legada de biometria detectada em disco. Recadastro v6 exigido.");
-                return null;
+            if (template != null && template.getVersao() == VERSAO_EMBEDDING_QUALCOMM) {
+                return template.getEmbedding();
             }
 
+            Log.w(TAG, "Template do usuário " + uid + " em versão incompatível (" +
+                    (template != null ? template.getVersao() : "null") + " != " + VERSAO_EMBEDDING_QUALCOMM + "). Recadastro necessário.");
             return null;
         } catch (Exception e) {
-            Log.e(TAG, "Erro ao carregar template biométrico local", e);
+            Log.e(TAG, "Erro ao carregar template biométrico do usuário " + uid, e);
             return null;
         }
     }
 
     public static File obterArquivoFotoPerfil(Context context, String uid) {
         if (context == null || uid == null || uid.trim().isEmpty()) return null;
-        File fileImg = new File(new File(context.getFilesDir(), "profile"), uid.trim() + ".jpg");
-        return fileImg.exists() ? fileImg : null;
+        File profileFile = new File(new File(context.getFilesDir(), "biometrics"), uid + "_profile.png");
+        return profileFile.exists() ? profileFile : null;
     }
 }

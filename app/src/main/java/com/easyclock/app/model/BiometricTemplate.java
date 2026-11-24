@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class BiometricTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public static final int VERSAO_ATUAL = 6;
+    public static final int VERSAO_ATUAL = 7;
 
     private int versao = VERSAO_ATUAL;
     private float[] embedding;

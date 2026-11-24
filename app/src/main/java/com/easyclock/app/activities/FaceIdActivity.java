@@ -132,7 +132,7 @@ public class FaceIdActivity extends AppCompatActivity {
                 tvInstrucaoFaceId.setText("RECONHECIMENTO FACIAL: Olhe para a câmera para confirmar sua identidade.");
             }
             if (tvStatusBiometriaDetalhado != null) {
-                tvStatusBiometriaDetalhado.setText("Modo: Reconhecimento Facial Obrigatório");
+                tvStatusBiometriaDetalhado.setText("Modo: Reconhecimento Facial Obrigatório (Mínimo: 80,0%)");
             }
         }
 
@@ -217,6 +217,10 @@ public class FaceIdActivity extends AppCompatActivity {
             return;
         }
 
+        // Invalida imediatamente qualquer aprovação anterior ao iniciar nova captura
+        biometriaValidadaSucesso = false;
+        if (btnBaterPontoFaceId != null) btnBaterPontoFaceId.setEnabled(false);
+
         if (btnCapturarFacial != null) btnCapturarFacial.setEnabled(false);
         if (tvStatusBiometriaDetalhado != null) tvStatusBiometriaDetalhado.setText("Capturando imagem facial...");
 
@@ -270,7 +274,7 @@ public class FaceIdActivity extends AppCompatActivity {
     private void processarBiometriaFacial(Bitmap bitmap) {
         if (tvStatusBiometriaDetalhado != null) tvStatusBiometriaDetalhado.setText("Analisando características faciais...");
 
-        ReconhecimentoFacialService.analisarEExtrairBiometria(bitmap, new ReconhecimentoFacialService.OnAnaliseFacialListener() {
+        ReconhecimentoFacialService.analisarEExtrairBiometria(FaceIdActivity.this, bitmap, new ReconhecimentoFacialService.OnAnaliseFacialListener() {
             @Override
             public void onSuccess(Bitmap faceCrop, float[] novoEmbedding) {
                 if (isModoCadastro) {
@@ -347,11 +351,11 @@ public class FaceIdActivity extends AppCompatActivity {
             biometriaValidadaSucesso = false;
             if (btnBaterPontoFaceId != null) btnBaterPontoFaceId.setEnabled(false);
 
-            String erro = "Referência biométrica local indisponível no dispositivo. Entre em contato com o RH.";
+            String erro = "Referência biométrica local indisponível ou em versão antiga. Solicite autorização de recadastro ao RH.";
             if (tvStatusBiometriaDetalhado != null) tvStatusBiometriaDetalhado.setText(erro);
 
             new AlertDialog.Builder(this)
-                    .setTitle("Biometria Indisponível")
+                    .setTitle("Recadastro Necessário")
                     .setMessage(erro)
                     .setPositiveButton("OK", null)
                     .show();
@@ -359,9 +363,11 @@ public class FaceIdActivity extends AppCompatActivity {
         }
 
         float sim = ReconhecimentoFacialService.calcularSimilaridadeCosseno(storedEmbedding, novoEmbedding);
+        boolean aprovado = ReconhecimentoFacialService.validarAprovacaoSimilaridade(sim);
+
         if (btnCapturarFacial != null) btnCapturarFacial.setEnabled(true);
 
-        if (sim >= ReconhecimentoFacialService.LIMIAR_SIMILARIDADE_MINIMA) {
+        if (aprovado) {
             biometriaValidadaSucesso = true;
             if (btnBaterPontoFaceId != null) btnBaterPontoFaceId.setEnabled(true);
 
